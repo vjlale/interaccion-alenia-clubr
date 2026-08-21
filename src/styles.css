@@ -1,0 +1,194 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* GLOCK brand */
+  --color-maruja-magenta: var(--maruja-magenta);
+  --color-maruja-magenta-deep: var(--maruja-magenta-deep);
+  --color-maruja-lima: var(--maruja-lima);
+  --color-maruja-lima-deep: var(--maruja-lima-deep);
+  --color-maruja-dorado: var(--maruja-dorado);
+  --color-maruja-dorado-light: var(--maruja-dorado-light);
+  --color-maruja-coral: var(--maruja-coral);
+  --color-maruja-bg: var(--maruja-bg);
+  --color-maruja-panel: var(--maruja-panel);
+  --color-maruja-violet: var(--maruja-violet);
+  --color-maruja-red: var(--maruja-red);
+
+  --font-display: "Bebas Neue", "Archivo Black", system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+:root {
+  --radius: 0.5rem;
+
+  /* GLOCK palette — chrome pink + deep violet + gold accents */
+  --maruja-magenta: #ff4ac4;
+  --maruja-magenta-deep: #b0187a;
+  --maruja-lima: #5FE88E;
+  --maruja-lima-deep: #2BA85E;
+  --maruja-dorado: #E8C96A;
+  --maruja-dorado-light: #FFE79A;
+  --maruja-coral: #ff8ad9;
+  --maruja-bg: #0a0118;
+  --maruja-panel: #170430;
+  --maruja-violet: #7a1fd6;
+  --maruja-red: #ff2d55;
+
+  /* shadcn-mapped tokens (dark by default) */
+  --background: oklch(0.06 0.08 305);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.10 0.10 310);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.10 0.10 310);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.72 0.30 340);
+  --primary-foreground: oklch(0.06 0.08 305);
+  --secondary: oklch(0.18 0.10 305);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.18 0.06 305);
+  --muted-foreground: oklch(0.72 0.04 305);
+  --accent: oklch(0.72 0.28 320);
+  --accent-foreground: oklch(0.06 0.05 300);
+  --destructive: oklch(0.65 0.25 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.30 0.15 320 / 60%);
+  --input: oklch(0.18 0.08 310);
+  --ring: oklch(0.72 0.30 340);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html, body { background-color: var(--maruja-bg); color: var(--color-foreground); }
+  body {
+    font-family: var(--font-sans);
+    background:
+      radial-gradient(1200px 700px at 15% 0%, rgba(255,74,196,0.28), transparent 60%),
+      radial-gradient(1000px 600px at 90% 100%, rgba(122,31,214,0.35), transparent 60%),
+      radial-gradient(600px 400px at 50% 50%, rgba(176,38,255,0.15), transparent 70%),
+      linear-gradient(180deg, #0a0118 0%, #1a052e 45%, #0a0118 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+/* === GLOCK utility classes === */
+
+.maruja-wordmark {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, #ffffff 0%, #ff4ac4 40%, #ffffff 60%, #ff4ac4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 40px rgba(255,74,196,0.5);
+}
+
+.maruja-wordmark-gold {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, #C9A84C, #E8C96A, #C9A84C);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.maruja-zebra {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #ffffff 0 14px,
+    #000000 14px 28px
+  );
+}
+
+.maruja-m-pattern {
+  background-color: var(--maruja-panel);
+  background-image:
+    radial-gradient(circle at 25% 25%, rgba(255,74,196,0.1) 0, transparent 30%),
+    radial-gradient(circle at 75% 75%, rgba(122,31,214,0.1) 0, transparent 30%);
+}
+
+.maruja-panel {
+  background: linear-gradient(180deg, rgba(23,4,48,0.85) 0%, rgba(10,1,24,0.95) 100%);
+  border: 1px solid rgba(255,74,196,0.3);
+  border-radius: 18px;
+  box-shadow: 0 0 0 1px rgba(255,74,196,0.1), 0 24px 80px -20px rgba(255,74,196,0.3);
+  backdrop-filter: blur(8px);
+}
+
+.maruja-tag {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  background: linear-gradient(135deg, #ff4ac4, #b026ff);
+  color: #fff;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  transform: skewX(-8deg);
+  border: 2px solid #fff;
+  box-shadow: 0 0 18px rgba(255,74,196,0.6);
+}
+
+.maruja-glow-magenta { box-shadow: 0 0 30px 4px rgba(255,74,196,0.6), 0 0 80px 8px rgba(255,74,196,0.3); }
+.maruja-glow-lima    { box-shadow: 0 0 30px 4px rgba(95,232,142,0.5),  0 0 80px 8px rgba(95,232,142,0.2); }
+.maruja-glow-dorado  { box-shadow: 0 0 30px 4px rgba(232,201,106,0.5), 0 0 80px 8px rgba(232,201,106,0.2); }
+.maruja-glow-coral   { box-shadow: 0 0 30px 4px rgba(255,138,217,0.55),0 0 80px 8px rgba(255,138,217,0.25); }
+
+@keyframes maruja-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+.maruja-float { animation: maruja-float 4.5s ease-in-out infinite; }
+
+@keyframes maruja-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.maruja-spin-slow { animation: maruja-spin 18s linear infinite; }
+.maruja-spin-fast { animation: maruja-spin 1.2s linear infinite; }
+
+@keyframes maruja-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.7; transform: scale(1.05); }
+}
+.maruja-pulse { animation: maruja-pulse 1.4s ease-in-out infinite; }
+
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes hashtag-marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.maruja-marquee { animation: hashtag-marquee 30s linear infinite; }
