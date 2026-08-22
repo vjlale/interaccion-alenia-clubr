@@ -1,4 +1,5 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
+import { saveScore } from "@/lib/maruja/useLeaderboard";
 
 interface Lip {
   id: number;
@@ -42,7 +43,12 @@ const LIP_R = 18;
 const GLITTER_COLORS = ["#ff4ac4", "#ff8ad9", "#E8C96A", "#7a1fd6", "#ffffff"];
 const CLAMP_DEG = 85;
 
-export function GlockMiniGame() {
+export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null }) {
+  const [panel, setPanel] = useState<"closed" | "form" | "saved">("closed");
+  const [pendingScore, setPendingScore] = useState(0);
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scoreElRef = useRef<HTMLDivElement>(null);
@@ -353,7 +359,36 @@ export function GlockMiniGame() {
     (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
   };
 
+  const openForm = () => {
+    setPendingScore(scoreRef.current);
+    setErrorMsg(null);
+    setPanel("form");
+  };
+
+  const resetGame = () => {
+    scoreRef.current = 0;
+    lipsRef.current = [];
+    dropsRef.current = [];
+    glittersRef.current = [];
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setErrorMsg(null);
+    const { error } = await saveScore(name, pendingScore, sessionId);
+    setSaving(false);
+    if (error) {
+      setErrorMsg(error);
+      return;
+    }
+    setName("");
+    setPanel("saved");
+    resetGame();
+    setTimeout(() => setPanel("closed"), 2600);
+  };
+
   return (
+    <div className="w-full flex flex-col" style={{ gap: 10 }}>
     <div
       ref={containerRef}
       className="relative w-full rounded-2xl overflow-hidden touch-none select-none"
@@ -456,6 +491,111 @@ export function GlockMiniGame() {
       >
         TOCÁ Y ARRASTRÁ PARA APUNTAR
       </div>
+    </div>
+
+      {panel === "closed" && (
+        <button
+          type="button"
+          onClick={openForm}
+          className="w-full rounded-xl py-3 active:scale-[0.98] transition-transform"
+          style={{
+            fontFamily: "var(--font-display)",
+            letterSpacing: "0.14em",
+            fontSize: "0.85rem",
+            color: "#fff",
+            background: "linear-gradient(90deg, #ff4ac4, #7a1fd6)",
+            border: "1px solid #ff8ad9",
+            boxShadow: "0 0 18px rgba(255,74,196,0.45)",
+          }}
+        >
+          REGISTRAR MI PUNTAJE
+        </button>
+      )}
+
+      {panel === "form" && (
+        <div
+          className="w-full rounded-xl p-3 flex flex-col"
+          style={{
+            gap: 10,
+            background: "rgba(13,5,32,0.9)",
+            border: "1px solid #ff4ac488",
+            boxShadow: "0 0 18px rgba(255,74,196,0.3)",
+          }}
+        >
+          <p
+            className="text-center"
+            style={{ fontFamily: "var(--font-display)", fontSize: "0.8rem", color: "#ff8ad9", letterSpacing: "0.1em" }}
+          >
+            PUNTAJE: {pendingScore} 💋
+          </p>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value.slice(0, 24))}
+            maxLength={24}
+            placeholder="Tu nombre"
+            autoFocus
+            className="w-full rounded-lg px-3 py-2 outline-none"
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "1rem",
+              color: "#fff",
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid #ff8ad966",
+            }}
+          />
+          {errorMsg && (
+            <p style={{ color: "#ff8ad9", fontFamily: "var(--font-display)", fontSize: "0.7rem" }}>{errorMsg}</p>
+          )}
+          <div className="flex" style={{ gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => setPanel("closed")}
+              className="rounded-lg px-4 py-2"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "0.75rem",
+                letterSpacing: "0.1em",
+                color: "#ff8ad9",
+                border: "1px solid #ff8ad955",
+              }}
+            >
+              CANCELAR
+            </button>
+            <button
+              type="button"
+              disabled={saving || name.trim().length === 0}
+              onClick={handleSave}
+              className="flex-1 rounded-lg py-2 disabled:opacity-50"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "0.8rem",
+                letterSpacing: "0.12em",
+                color: "#fff",
+                background: "linear-gradient(90deg, #ff4ac4, #E8C96A)",
+                border: "1px solid #ff8ad9",
+              }}
+            >
+              {saving ? "GUARDANDO…" : "GUARDAR"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {panel === "saved" && (
+        <div
+          className="w-full rounded-xl py-3 text-center"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "0.85rem",
+            letterSpacing: "0.12em",
+            color: "#0d0520",
+            background: "linear-gradient(90deg, #E8C96A, #ff8ad9)",
+            border: "1px solid #E8C96A",
+          }}
+        >
+          ¡PUNTAJE REGISTRADO! 💋
+        </div>
+      )}
     </div>
   );
 }

@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_scores: {
+        Row: {
+          created_at: string
+          id: string
+          player_name: string
+          score: number
+          session_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          player_name: string
+          score?: number
+          session_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          player_name?: string
+          score?: number
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_scores_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           created_at: string

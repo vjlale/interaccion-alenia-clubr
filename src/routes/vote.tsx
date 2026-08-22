@@ -10,6 +10,7 @@ import { CircularTimer } from "@/components/maruja/CircularTimer";
 import { OrbBlur, SillaRayas, BolaBoliche, ManoCopa, LabiosFlotando, NoPosersTag, TramaBackdrop } from "@/components/maruja/Decor";
 import { Confetti } from "@/components/maruja/Confetti";
 import { GlockMiniGame } from "@/components/maruja/GlockMiniGame";
+import { Leaderboard } from "@/components/maruja/Leaderboard";
 
 export const Route = createFileRoute("/vote")({
   head: () => ({
@@ -77,7 +78,7 @@ function VotePage() {
       <OrbBlur color="#7a1fd6" size={420} style={{ bottom: "-18%", right: "-30%" }} />
       <div className="w-full max-w-[460px] py-4 relative">
         {!session || session.status === "idle" ? (
-          <IdleMobile />
+          <IdleMobile sessionId={session?.id ?? null} />
         ) : session.status === "voting" ? (
           <VotingMobile
             session={session}
@@ -97,7 +98,7 @@ function VotePage() {
   );
 }
 
-function IdleMobile() {
+function IdleMobile({ sessionId }: { sessionId: string | null }) {
   return (
     <div className="flex flex-col items-center text-center relative" style={{ gap: 14, paddingTop: 8 }}>
       <TramaBackdrop opacity={0.05} />
@@ -121,7 +122,11 @@ function IdleMobile() {
       </div>
 
       <div className="w-full" style={{ zIndex: 3 }}>
-        <GlockMiniGame />
+        <GlockMiniGame sessionId={sessionId} />
+      </div>
+
+      <div className="w-full" style={{ zIndex: 3 }}>
+        <Leaderboard sessionId={sessionId} />
       </div>
 
       <NoPosersTag width={200} className="mt-2" label="GLOCK LIVE" />
