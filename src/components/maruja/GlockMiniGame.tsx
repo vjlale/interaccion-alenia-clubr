@@ -359,7 +359,36 @@ export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null 
     (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
   };
 
+  const openForm = () => {
+    setPendingScore(scoreRef.current);
+    setErrorMsg(null);
+    setPanel("form");
+  };
+
+  const resetGame = () => {
+    scoreRef.current = 0;
+    lipsRef.current = [];
+    dropsRef.current = [];
+    glittersRef.current = [];
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setErrorMsg(null);
+    const { error } = await saveScore(name, pendingScore, sessionId);
+    setSaving(false);
+    if (error) {
+      setErrorMsg(error);
+      return;
+    }
+    setName("");
+    setPanel("saved");
+    resetGame();
+    setTimeout(() => setPanel("closed"), 2600);
+  };
+
   return (
+    <div className="w-full flex flex-col" style={{ gap: 10 }}>
     <div
       ref={containerRef}
       className="relative w-full rounded-2xl overflow-hidden touch-none select-none"
