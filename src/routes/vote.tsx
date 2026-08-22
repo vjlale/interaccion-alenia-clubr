@@ -104,8 +104,8 @@ function IdleMobile({ sessionId }: { sessionId: string | null }) {
   return (
     <div className="flex flex-col items-center text-center relative" style={{ gap: 14, paddingTop: 8 }}>
       <TramaBackdrop opacity={0.05} />
-      <div className="relative w-full" style={{ zIndex: 2 }}>
-        <Wordmark size="clamp(2rem, 11vw, 3rem)" />
+      <div className="relative w-full flex flex-col items-center" style={{ zIndex: 2 }}>
+        <Wordmark size="clamp(5rem, 26vw, 8.5rem)" className="mb-1" />
         <h2
           className="mt-2 maruja-wordmark"
           style={{ fontSize: "clamp(1.1rem, 5vw, 1.5rem)", fontFamily: "var(--font-display)", lineHeight: 1.05, color: "#fff" }}
