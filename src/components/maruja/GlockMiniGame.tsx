@@ -1,4 +1,5 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
+import { saveScore } from "@/lib/maruja/useLeaderboard";
 
 interface Lip {
   id: number;
