@@ -11,6 +11,7 @@ import { OrbBlur, SillaRayas, BolaBoliche, ManoCopa, LabiosFlotando, NoPosersTag
 import { Confetti } from "@/components/maruja/Confetti";
 import { GlockMiniGame } from "@/components/maruja/GlockMiniGame";
 import { Leaderboard } from "@/components/maruja/Leaderboard";
+import aleniaLogo from "@/assets/Alenia-logo.webp";
 
 export const Route = createFileRoute("/vote")({
   head: () => ({
@@ -191,6 +192,31 @@ function IdleMobile({ sessionId }: { sessionId: string | null }) {
       )}
 
       <NoPosersTag width={200} className="mt-2" label="GLOCK LIVE" />
+
+      <a
+        href="https://aleniahub.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex flex-col items-center select-none"
+        style={{
+          marginTop: 18,
+          paddingTop: 14,
+          paddingBottom: 6,
+          opacity: 0.85,
+          textDecoration: "none",
+        }}
+      >
+        <img
+          src={aleniaLogo}
+          alt="Build by Alenia"
+          draggable={false}
+          style={{
+            height: "clamp(2.2rem, 11vw, 3.2rem)",
+            width: "auto",
+            filter: "drop-shadow(0 0 14px rgba(64,224,208,0.35))",
+          }}
+        />
+      </a>
     </div>
   );
 }
