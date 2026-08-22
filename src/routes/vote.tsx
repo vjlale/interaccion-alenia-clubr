@@ -99,6 +99,8 @@ function VotePage() {
 }
 
 function IdleMobile({ sessionId }: { sessionId: string | null }) {
+  const [rankingOpen, setRankingOpen] = useState(false);
+
   return (
     <div className="flex flex-col items-center text-center relative" style={{ gap: 14, paddingTop: 8 }}>
       <TramaBackdrop opacity={0.05} />
@@ -126,13 +128,73 @@ function IdleMobile({ sessionId }: { sessionId: string | null }) {
       </div>
 
       <div className="w-full" style={{ zIndex: 3 }}>
-        <Leaderboard sessionId={sessionId} />
+        <button
+          type="button"
+          onClick={() => setRankingOpen(true)}
+          className="w-full rounded-xl py-3 active:scale-[0.98] transition-transform"
+          style={{
+            fontFamily: "var(--font-display)",
+            letterSpacing: "0.14em",
+            fontSize: "0.85rem",
+            color: "#fff",
+            background: "linear-gradient(90deg, #7a1fd6, #ff4ac4)",
+            border: "1px solid #ff8ad9",
+            boxShadow: "0 0 18px rgba(255,74,196,0.45)",
+          }}
+        >
+          VER RANKING 🏆
+        </button>
       </div>
+
+      {rankingOpen && (
+        <div
+          onClick={() => setRankingOpen(false)}
+          className="flex items-center justify-center"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "rgba(6,1,15,0.82)",
+            backdropFilter: "blur(6px)",
+            padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full"
+            style={{ maxWidth: 420, maxHeight: "85vh", overflowY: "auto" }}
+          >
+            <button
+              type="button"
+              aria-label="Cerrar ranking"
+              onClick={() => setRankingOpen(false)}
+              className="absolute rounded-full flex items-center justify-center"
+              style={{
+                top: 8,
+                right: 8,
+                zIndex: 2,
+                width: 32,
+                height: 32,
+                color: "#fff",
+                background: "rgba(122,31,214,0.85)",
+                border: "1px solid #ff8ad9",
+                fontFamily: "var(--font-display)",
+                fontSize: "0.9rem",
+                lineHeight: 1,
+              }}
+            >
+              ✕
+            </button>
+            <Leaderboard sessionId={sessionId} />
+          </div>
+        </div>
+      )}
 
       <NoPosersTag width={200} className="mt-2" label="GLOCK LIVE" />
     </div>
   );
 }
+
 
 function VotingMobile({
   session, counts, total, myVote, voting, onVote,
