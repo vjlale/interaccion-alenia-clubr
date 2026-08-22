@@ -43,7 +43,12 @@ const LIP_R = 18;
 const GLITTER_COLORS = ["#ff4ac4", "#ff8ad9", "#E8C96A", "#7a1fd6", "#ffffff"];
 const CLAMP_DEG = 85;
 
-export function GlockMiniGame() {
+export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null }) {
+  const [panel, setPanel] = useState<"closed" | "form" | "saved">("closed");
+  const [pendingScore, setPendingScore] = useState(0);
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scoreElRef = useRef<HTMLDivElement>(null);
