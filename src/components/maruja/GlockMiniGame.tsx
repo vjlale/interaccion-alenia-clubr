@@ -9,6 +9,7 @@ interface Lip {
   vy: number;
   rot: number;
   vrot: number;
+  bad: boolean;
 }
 
 interface Drop {
@@ -42,6 +43,9 @@ const DROP_R = 7;
 const LIP_R = 18;
 const GLITTER_COLORS = ["#ff4ac4", "#ff8ad9", "#E8C96A", "#7a1fd6", "#ffffff"];
 const CLAMP_DEG = 85;
+const STROBE_SCORE = 15;
+const HARD_SCORE = 35;
+const BAD_COLORS = ["#ff3b1f", "#ff8c1a", "#ffd24a", "#ffffff"];
 
 export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null }) {
   const [panel, setPanel] = useState<"closed" | "form" | "saved">("closed");
@@ -54,6 +58,7 @@ export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null 
   const scoreElRef = useRef<HTMLDivElement>(null);
   const gunElRef = useRef<HTMLDivElement>(null);
   const splashElRef = useRef<SVGGElement>(null);
+  const strobeElRef = useRef<HTMLDivElement>(null);
 
   // All mutable game state in refs — no React state = no re-renders.
   const lipsRef = useRef<Lip[]>([]);
@@ -72,6 +77,7 @@ export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null 
   const splashVisibleRef = useRef(false);
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
   const runningRef = useRef(true);
+  const strobeStateRef = useRef({ flash: -1, invert: -1 });
 
   // Measure size once and on resize (ResizeObserver) — never per-frame.
   useEffect(() => {
@@ -134,17 +140,50 @@ export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null 
       ctx.clearRect(0, 0, cssW, cssH);
 
       // Spawn lips (rate limited)
-      if (t - lastSpawnRef.current > 850 && lipsRef.current.length < 9) {
+      const score = scoreRef.current;
+      const hard = score >= HARD_SCORE;
+      const spawnEvery = hard ? 560 : 850;
+      const speedBoost = hard ? 1.7 : 1;
+      if (t - lastSpawnRef.current > spawnEvery && lipsRef.current.length < (hard ? 12 : 9)) {
         lastSpawnRef.current = t;
+        const bad = hard && Math.random() < 0.28;
         lipsRef.current.push({
           id: ++idRef.current,
           x: 20 + Math.random() * (cssW - 40),
           y: -LIP_SIZE,
           vx: (Math.random() - 0.5) * 1.4,
-          vy: 1.6 + Math.random() * 1.4,
+          vy: (1.6 + Math.random() * 1.4) * speedBoost,
           rot: (Math.random() - 0.5) * 30,
           vrot: (Math.random() - 0.5) * 1.5,
+          bad,
         });
+      }
+
+      // Strobe (score >= STROBE_SCORE): short occasional bursts, not constant
+      if (score >= STROBE_SCORE) {
+        const cycle = t % 1600;
+        const inBurst = cycle < 260;
+        const flash = inBurst && Math.floor(cycle / 65) % 2 === 0 ? 1 : 0;
+        const invert = inBurst && Math.floor(cycle / 130) % 2 === 1 ? 1 : 0;
+        const st = strobeStateRef.current;
+        if (flash !== st.flash && strobeElRef.current) {
+          st.flash = flash;
+          strobeElRef.current.style.opacity = flash ? "0.55" : "0";
+        }
+        if (invert !== st.invert && containerRef.current) {
+          st.invert = invert;
+          containerRef.current.style.filter = invert ? "invert(1) hue-rotate(180deg)" : "none";
+        }
+      } else {
+        const st = strobeStateRef.current;
+        if (st.flash !== 0 && strobeElRef.current) {
+          st.flash = 0;
+          strobeElRef.current.style.opacity = "0";
+        }
+        if (st.invert !== 0 && containerRef.current) {
+          st.invert = 0;
+          containerRef.current.style.filter = "none";
+        }
       }
 
       // BG flakes (draw pass 1 — no shadows for perf)
@@ -182,6 +221,7 @@ export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null 
       const survivingDrops: Drop[] = [];
       const currentLips = lipsRef.current;
       let hits = 0;
+      let penalties = 0;
       for (let i = 0; i < drops.length; i++) {
         const d = drops[i];
         d.x += d.vx;
@@ -195,7 +235,9 @@ export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null 
           const ddy = d.y - l.y;
           if (ddx * ddx + ddy * ddy < (LIP_R + DROP_R) * (LIP_R + DROP_R)) {
             hit = true;
-            hits++;
+            if (l.bad) penalties++;
+            else hits++;
+            const palette = l.bad ? BAD_COLORS : GLITTER_COLORS;
             // Burst glitter
             for (let k = 0; k < 12; k++) {
               const a = (Math.PI * 2 * k) / 12;
@@ -206,7 +248,7 @@ export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null 
                 vx: Math.cos(a) * (1.8 + Math.random() * 2.2),
                 vy: Math.sin(a) * (1.8 + Math.random() * 2.2) - 1,
                 life: 40,
-                color: GLITTER_COLORS[k % GLITTER_COLORS.length],
+                color: palette[k % palette.length],
               });
             }
             // Remove lip in-place
@@ -218,8 +260,8 @@ export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null 
       }
       dropsRef.current = survivingDrops;
 
-      if (hits > 0) {
-        scoreRef.current += hits;
+      if (hits > 0 || penalties > 0) {
+        scoreRef.current = Math.max(0, scoreRef.current + hits - penalties * 3);
       }
 
       // Sync score to DOM only when it changed
@@ -269,13 +311,14 @@ export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null 
       ctx.shadowBlur = 10;
       for (let i = 0; i < currentLips.length; i++) {
         const l = currentLips[i];
+        const glyph = l.bad ? "💄" : "💋";
         if (l.rot === 0) {
-          ctx.fillText("💋", l.x, l.y);
+          ctx.fillText(glyph, l.x, l.y);
         } else {
           ctx.save();
           ctx.translate(l.x, l.y);
           ctx.rotate((l.rot * Math.PI) / 180);
-          ctx.fillText("💋", 0, 0);
+          ctx.fillText(glyph, 0, 0);
           ctx.restore();
         }
       }
@@ -370,6 +413,9 @@ export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null 
     lipsRef.current = [];
     dropsRef.current = [];
     glittersRef.current = [];
+    strobeStateRef.current = { flash: -1, invert: -1 };
+    if (containerRef.current) containerRef.current.style.filter = "none";
+    if (strobeElRef.current) strobeElRef.current.style.opacity = "0";
   };
 
   const handleSave = async () => {
@@ -408,6 +454,12 @@ export function GlockMiniGame({ sessionId = null }: { sessionId?: string | null 
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none"
         style={{ display: "block" }}
+      />
+
+      <div
+        ref={strobeElRef}
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "#ffffff", opacity: 0, mixBlendMode: "screen", willChange: "opacity" }}
       />
 
       <div
