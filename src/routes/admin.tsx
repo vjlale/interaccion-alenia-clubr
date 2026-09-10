@@ -42,6 +42,31 @@ function normalizeSongs(input: Song[] | null | undefined): Song[] {
   return input.map((s, i) => makeSong(i, s));
 }
 
+// Redimensiona la foto elegida en el navegador y la devuelve como data URL liviana.
+async function fileToResizedDataUrl(file: File, max = 640): Promise<string> {
+  const src = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = reject;
+      el.src = src;
+    });
+    const scale = Math.min(1, max / Math.max(img.width, img.height));
+    const w = Math.max(1, Math.round(img.width * scale));
+    const h = Math.max(1, Math.round(img.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return "";
+    ctx.drawImage(img, 0, 0, w, h);
+    return canvas.toDataURL("image/jpeg", 0.82);
+  } finally {
+    URL.revokeObjectURL(src);
+  }
+}
+
 function AdminPage() {
   const { session, connected, refetch } = useActiveSession();
   const { counts, total } = useVotes(session?.id);
@@ -129,6 +154,13 @@ function AdminPage() {
     setSongs((prev) => prev.filter((_, i) => i !== idx).map((s, i) => makeSong(i, s)));
   };
 
+  const onPickImage = async (idx: number, file: File | null | undefined) => {
+    if (!file) return;
+    const dataUrl = await fileToResizedDataUrl(file, 640);
+    if (!dataUrl) return;
+    setSongs((arr) => arr.map((s, i) => (i === idx ? { ...s, image: dataUrl } : s)));
+  };
+
   const openDisplay = () => {
     window.open("/display", "glock-display", "width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no");
   };
@@ -176,48 +208,97 @@ function AdminPage() {
             CONFIGURAR OPCIONES
           </h2>
           <p style={{ fontFamily: "var(--font-sans)", color: "#aaa", marginBottom: 16, fontSize: "0.9rem" }}>
-            Título obligatorio.
+            Nombre del artista obligatorio. Subí una foto (o pegá el link de una imagen) para cada uno.
           </p>
 
           <div className="flex flex-col gap-4">
             {songs.map((song, idx) => {
               const color = colorForIndex(idx);
               return (
-                <div key={`${song.id}-${idx}`} className="grid grid-cols-[60px_1fr_56px] gap-3 items-center">
-                  <div style={{
-                    width: 50, height: 50, borderRadius: 10,
-                    background: color, color: "#000",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "var(--font-display)", fontSize: 28,
-                  }}>
-                    {song.id}
+                <div
+                  key={`${song.id}-${idx}`}
+                  className="rounded-xl p-3"
+                  style={{ border: `1px solid ${color}44`, background: "rgba(255,255,255,0.03)" }}
+                >
+                  <div className="grid grid-cols-[52px_1fr_44px] gap-3 items-center">
+                    <div style={{
+                      width: 48, height: 48, borderRadius: 10,
+                      background: color, color: "#000",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontFamily: "var(--font-display)", fontSize: 26,
+                    }}>
+                      {song.id}
+                    </div>
+                    <input
+                      disabled={!isIdle}
+                      placeholder="Nombre del artista *"
+                      value={song.title}
+                      onChange={(e) => setSongs((arr) => arr.map((s, i) => i === idx ? { ...s, title: e.target.value } : s))}
+                      className="px-3 py-2 rounded-lg outline-none"
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        border: `1px solid ${color}66`,
+                        fontFamily: "var(--font-sans)",
+                      }}
+                    />
+                    <button
+                      disabled={!isIdle || songs.length <= MIN_OPTIONS}
+                      onClick={() => removeOption(idx)}
+                      className="h-10 rounded-lg disabled:opacity-35"
+                      style={{ border: "1px solid rgba(255,255,255,0.25)", color: "#fff", fontFamily: "var(--font-display)" }}
+                      title="Eliminar opción"
+                    >
+                      −
+                    </button>
                   </div>
-                  <input
-                    disabled={!isIdle}
-                    placeholder="Título *"
-                    value={song.title}
-                    onChange={(e) => setSongs((arr) => arr.map((s, i) => i === idx ? { ...s, title: e.target.value } : s))}
-                    className="px-3 py-2 rounded-lg outline-none"
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      color: "#fff",
-                      border: `1px solid ${color}66`,
-                      fontFamily: "var(--font-sans)",
-                    }}
-                  />
-                  <button
-                    disabled={!isIdle || songs.length <= MIN_OPTIONS}
-                    onClick={() => removeOption(idx)}
-                    className="h-10 rounded-lg disabled:opacity-35"
-                    style={{
-                      border: "1px solid rgba(255,255,255,0.25)",
-                      color: "#fff",
-                      fontFamily: "var(--font-display)",
-                    }}
-                    title="Eliminar opción"
-                  >
-                    −
-                  </button>
+
+                  <div className="grid grid-cols-[52px_1fr] gap-3 items-center mt-3">
+                    <div
+                      style={{
+                        width: 48, height: 48, borderRadius: 10, overflow: "hidden",
+                        border: `1px solid ${color}66`, background: "rgba(255,255,255,0.05)",
+                        display: "grid", placeItems: "center",
+                      }}
+                    >
+                      {song.image ? (
+                        <img src={song.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <span style={{ color: "#888", fontSize: 20 }}>📷</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label
+                        className="px-3 py-2 rounded-lg cursor-pointer"
+                        style={{
+                          border: `1px solid ${color}66`, color: "#fff",
+                          fontFamily: "var(--font-sans)", fontSize: "0.85rem",
+                          opacity: isIdle ? 1 : 0.4, pointerEvents: isIdle ? "auto" : "none",
+                        }}
+                      >
+                        {song.image ? "Cambiar foto" : "Subir foto"}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={!isIdle}
+                          onChange={(e) => onPickImage(idx, e.target.files?.[0])}
+                          style={{ display: "none" }}
+                        />
+                      </label>
+                      <input
+                        disabled={!isIdle}
+                        placeholder="…o pegá un link de imagen"
+                        value={song.image ?? ""}
+                        onChange={(e) => setSongs((arr) => arr.map((s, i) => i === idx ? { ...s, image: e.target.value } : s))}
+                        className="px-3 py-2 rounded-lg outline-none flex-1 min-w-[140px]"
+                        style={{
+                          background: "rgba(255,255,255,0.05)", color: "#fff",
+                          border: "1px solid rgba(255,255,255,0.15)",
+                          fontFamily: "var(--font-sans)", fontSize: "0.8rem",
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
               );
             })}
