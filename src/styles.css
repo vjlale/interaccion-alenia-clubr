@@ -43,8 +43,9 @@
   --color-maruja-red: var(--maruja-red);
 
   --font-display: "Bebas Neue", "Archivo Black", system-ui, sans-serif;
+  --font-cartel: "Anton", "Archivo Black", "Bebas Neue", system-ui, sans-serif;
   --font-serif: "Playfair Display", Georgia, serif;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans: "Oswald", "Inter", system-ui, sans-serif;
 }
 
 :root {

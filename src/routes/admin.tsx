@@ -33,11 +33,12 @@ function makeSong(index: number, prev?: Partial<Song>): Song {
     id: optionLabel(index),
     title: prev?.title ?? "",
     artist: prev?.artist ?? "",
+    image: prev?.image ?? "",
   };
 }
 
 function normalizeSongs(input: Song[] | null | undefined): Song[] {
-  if (!input?.length) return [makeSong(0), makeSong(1), makeSong(2), makeSong(3)];
+  if (!input?.length) return [makeSong(0), makeSong(1)];
   return input.map((s, i) => makeSong(i, s));
 }
 
@@ -122,10 +123,10 @@ function AdminPage() {
   const reset = async () => {
     await supabase.from("sessions").insert({
       status: "idle",
-      songs: [makeSong(0), makeSong(1), makeSong(2), makeSong(3)],
+      songs: [makeSong(0), makeSong(1)],
       duration_sec: duration,
     });
-    setSongs([makeSong(0), makeSong(1), makeSong(2), makeSong(3)]);
+    setSongs([makeSong(0), makeSong(1)]);
     refetch();
   };
 

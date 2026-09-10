@@ -2,21 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
-import { useActiveSession, useVotes, useCountdown } from "@/lib/maruja/useSession";
-import { colorForIndex } from "@/lib/maruja/types";
-import { OrbBlur, TramaBackdrop } from "@/components/maruja/Decor";
+import { useActiveSession, useVotes } from "@/lib/maruja/useSession";
+import { type Song } from "@/lib/maruja/types";
 import glockLeft from "@/assets/glock.png";
 import glockRight from "@/assets/glock-right.png";
-import armitaFiestaGlock from "@/assets/armitafiestaglockcolornew.png";
 import glockLogo from "@/assets/glockfinal1.png";
-import { CircularTimer } from "@/components/maruja/CircularTimer";
+import versusVs from "@/assets/versus-vs.png";
+import versusBg from "@/assets/versus-bg.jpg";
 import { Confetti } from "@/components/maruja/Confetti";
 import { DisplayStage } from "@/components/maruja/DisplayStage";
 
 export const Route = createFileRoute("/display")({
   head: () => ({
     meta: [
-      { title: "GLOCK — Display" },
+      { title: "Club Reggaeton XL — Display" },
       { name: "description", content: "Pantalla en vivo para mostrar la votación del evento." },
       { name: "robots", content: "noindex" },
     ],
@@ -24,12 +23,16 @@ export const Route = createFileRoute("/display")({
   component: DisplayPage,
 });
 
+// Paleta versus (dorado / violeta)
+const GOLD = { base: "#E7B10C", lt: "#FBE07A", dp: "#9A7407" };
+const VIOLET = { base: "#9B2FE0", lt: "#C56BF5", dp: "#6A1AA0" };
+
 function DisplayPage() {
   const { session } = useActiveSession();
   const { counts, total } = useVotes(session?.id);
   const [voteUrl, setVoteUrl] = useState("");
   const [obsOpts, setObsOpts] = useState<{ bg: string; hideCursor: boolean }>({
-    bg: "#0a0118",
+    bg: "#0a0a0c",
     hideCursor: false,
   });
 
@@ -39,13 +42,12 @@ function DisplayPage() {
     const bgParam = params.get("bg");
     const hideCursor = params.get("nocursor") === "1" || bgParam === "transparent";
     setObsOpts({
-      bg: bgParam === "transparent" ? "transparent" : (bgParam ? `#${bgParam.replace(/^#/, "")}` : "#0a0118"),
+      bg: bgParam === "transparent" ? "transparent" : (bgParam ? `#${bgParam.replace(/^#/, "")}` : "#0a0a0c"),
       hideCursor,
     });
   }, []);
 
   const isWaitingForVote = !session || session.status === "idle";
-  const isVotingActive = session?.status === "voting";
 
   if (!session) {
     return (
@@ -61,14 +63,6 @@ function DisplayPage() {
         <style>{`html, body, * { cursor: none !important; }`}</style>
       )}
       <DisplayStage background={obsOpts.bg}>
-        {obsOpts.bg !== "transparent" && <TramaBackdrop opacity={0.05} />}
-        {obsOpts.bg !== "transparent" && (
-          <>
-            <OrbBlur color="#ff4ac4" size={900} style={{ top: -300, left: -250 }} />
-            <OrbBlur color="#7a1fd6" size={900} style={{ bottom: -300, right: -250 }} />
-          </>
-        )}
-
         {isWaitingForVote ? (
           <IdleScreen url={voteUrl} />
         ) : session.status === "voting" ? (
@@ -83,145 +77,51 @@ function DisplayPage() {
   );
 }
 
+/* ======================= FONDO VERSUS ======================= */
 
-function IdleScreen({ url }: { url: string }) {
+function VersusBackdrop() {
+  return (
+    <div className="absolute inset-0" style={{ zIndex: 0, overflow: "hidden", background: "#0a0a0c" }} aria-hidden>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `url(${versusBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: 0.2,
+          mixBlendMode: "luminosity",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "radial-gradient(120% 90% at 50% -10%, rgba(231,177,12,0.18), transparent 55%)",
+        }}
+      />
+    </div>
+  );
+}
+
+function GoldFrame() {
   return (
     <div
-      className="absolute inset-0"
+      className="absolute"
+      aria-hidden
       style={{
-        zIndex: 3,
-        display: "grid",
-        placeItems: "center",
-        padding: "7cqh 7cqw",
-        overflow: "hidden",
+        inset: "1.6cqh 1cqw",
+        border: "0.35cqh solid " + GOLD.base,
+        borderRadius: "0.6cqh",
+        boxShadow: `inset 0 0 0 0.18cqh rgba(0,0,0,.85), inset 0 0 0 0.5cqh ${GOLD.dp}, 0 0 3cqh rgba(231,177,12,.25)`,
+        pointerEvents: "none",
+        zIndex: 6,
       }}
-    >
-      <StageSideGlocks />
-      <div
-        className="rounded-[3cqh]"
-        style={{
-          position: "relative",
-          zIndex: 2,
-          width: "min(50cqw, 55cqh)",
-          maxWidth: "100%",
-          border: "1.5px solid rgba(255,255,255,0.18)",
-          background: "linear-gradient(155deg, rgba(255,255,255,0.06), rgba(10,1,24,0.94))",
-          boxShadow: "0 0 5cqh rgba(255,74,196,0.24), inset 0 0 8cqh rgba(255,74,196,0.08)",
-          backdropFilter: "blur(3px)",
-          padding: "2.4cqh 2cqw 2.6cqh",
-          display: "grid",
-          gridTemplateRows: "auto auto minmax(0, 1fr)",
-          rowGap: "1.2cqh",
-          placeItems: "center",
-          minHeight: 0,
-        }}
-      >
-        <p
-          className="text-center"
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "5.7cqh",
-            lineHeight: 0.95,
-            color: "#ff8ad9",
-            letterSpacing: "0.14em",
-            textShadow: "0 0 3cqh rgba(255,74,196,0.55)",
-            margin: 0,
-          }}
-        >
-          QUE ESCUCHAMOS ??
-        </p>
-        <p
-          className="text-center"
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "3.9cqh",
-            lineHeight: 1,
-            color: "#ffffff",
-            letterSpacing: "0.1em",
-            margin: 0,
-          }}
-        >
-          ESCANEÁ Y ELEGÍ
-        </p>
-
-        <div
-          className="bg-white"
-          style={{
-            width: "min(100%, 39cqh)",
-            aspectRatio: "1 / 1",
-            padding: "1.35cqh",
-            borderRadius: "1.9cqh",
-            boxShadow: "0 0 3.3cqh rgba(255,74,196,0.7)",
-            display: "grid",
-            placeItems: "center",
-            boxSizing: "border-box",
-          }}
-        >
-          <QRCodeSVG
-            value={url || "https://example.com/vote"}
-            size={512}
-            fgColor="#0a0118"
-            bgColor="#ffffff"
-            style={{ width: "100%", height: "100%", display: "block" }}
-          />
-        </div>
-      </div>
-    </div>
+    />
   );
 }
 
-function StageSideGlocks() {
-  return (
-    <div className="pointer-events-none absolute inset-0" aria-hidden>
-      <motion.img
-        src={glockLeft}
-        alt=""
-        draggable={false}
-        className="absolute h-auto"
-        style={{
-          width: "26cqw",
-          left: "-2cqw",
-          top: "50%",
-          objectFit: "contain",
-          objectPosition: "left center",
-          filter:
-            "drop-shadow(0 1.6cqh 3.8cqh rgba(0,0,0,0.62)) drop-shadow(0 0 3cqh rgba(255,74,196,0.32))",
-          transformOrigin: "left center",
-        }}
-        initial={{ x: "-45%", y: "-50%", opacity: 0, rotate: -2 }}
-        animate={{ x: 0, y: "-50%", opacity: 1, rotate: [-0.6, 0.4, -0.6] }}
-        transition={{
-          duration: 0.72,
-          ease: [0.22, 1, 0.36, 1],
-          rotate: { duration: 9, repeat: Infinity, ease: "easeInOut" },
-        }}
-      />
-      <motion.img
-        src={glockRight}
-        alt=""
-        draggable={false}
-        className="absolute h-auto"
-        style={{
-          width: "26cqw",
-          right: "-2cqw",
-          top: "50%",
-          objectFit: "contain",
-          objectPosition: "right center",
-          filter:
-            "drop-shadow(0 1.6cqh 3.8cqh rgba(0,0,0,0.62)) drop-shadow(0 0 3cqh rgba(122,31,214,0.32))",
-          transformOrigin: "right center",
-        }}
-        initial={{ x: "45%", y: "-50%", opacity: 0, rotate: 2 }}
-        animate={{ x: 0, y: "-50%", opacity: 1, rotate: [0.6, -0.4, 0.6] }}
-        transition={{
-          duration: 0.72,
-          ease: [0.22, 1, 0.36, 1],
-          rotate: { duration: 9.4, repeat: Infinity, ease: "easeInOut" },
-        }}
-      />
-    </div>
-  );
-}
+/* ======================= VOTACIÓN (VERSUS) ======================= */
 
 function VotingScreen({
   session,
@@ -234,483 +134,418 @@ function VotingScreen({
   total: number;
   url: string;
 }) {
-  const { remaining, fraction } = useCountdown(session.started_at, session.duration_sec);
-  const danger = fraction <= 0.2;
-  const timerColor = danger ? "#ff2d55" : "#ff4ac4";
-  const mm = Math.floor(remaining / 60);
-  const ss = (remaining % 60).toString().padStart(2, "0");
+  const A = session.songs[0];
+  const B = session.songs[1];
+  const aCount = A ? counts[A.id] ?? 0 : 0;
+  const bCount = B ? counts[B.id] ?? 0 : 0;
+  const aPct = total > 0 ? Math.round((aCount / total) * 100) : 0;
+  const bPct = total > 0 ? 100 - aPct : 0;
 
-  // Todas las unidades son cqh / cqw sobre el contenedor 16:9 del DisplayStage,
-  // por lo que TODO escala proporcionalmente sin depender del viewport real.
-  // En LED 1920x1080: 1cqh = 10.8px, 1cqw = 19.2px.
   return (
-    <div
-      className="absolute inset-0"
-      style={{
-        display: "grid",
-        gridTemplateRows: "16cqh minmax(0, 1fr) 4.8cqh",
-        rowGap: "1.7cqh",
-        padding: "4.2cqh 3.8cqw 3.8cqh",
-      }}
-    >
-      {/* HEADER: logo + barra de tiempo */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "auto 1fr",
-          columnGap: "2.2cqw",
-          alignItems: "center",
-          minHeight: 0,
-        }}
-      >
-        <img
-          src={glockLogo}
-          alt="GLOCK"
-          className="select-none"
-          style={{
-            height: "15.8cqh",
-            width: "auto",
-            maxWidth: "24cqw",
-            objectFit: "contain",
-            display: "block",
-            filter: "drop-shadow(0 0 2.5cqh rgba(255,74,196,0.4))",
-          }}
-        />
-        <div style={{ minWidth: 0 }}>
-          <div
-            className="overflow-hidden relative"
-            style={{
-              height: "6.4cqh",
-              borderRadius: "1.6cqh",
-              background: "rgba(10,1,24,0.7)",
-              border: `2px solid ${timerColor}88`,
-              boxShadow: `0 0 3.5cqh ${timerColor}66, inset 0 0 1.6cqh rgba(0,0,0,0.6)`,
-            }}
-          >
-            <motion.div
-              animate={{ width: `${fraction * 100}%` }}
-              transition={{ duration: 0.45, ease: "linear" }}
-              className={danger ? "maruja-pulse" : ""}
-              style={{
-                height: "100%",
-                background: `linear-gradient(90deg, ${timerColor}, #fff, ${timerColor})`,
-                boxShadow: `0 0 3.5cqh ${timerColor}, 0 0 7cqh ${timerColor}80`,
-              }}
-            />
-            <div
-              className="absolute inset-0 flex items-center justify-end"
-              style={{
-                paddingRight: "1.5cqw",
-                fontFamily: "var(--font-display)",
-                fontSize: "4cqh",
-                lineHeight: 1,
-                color: "#fff",
-                letterSpacing: "0.08em",
-                textShadow: "0 0 1.3cqh rgba(0,0,0,0.95), 0 0 2.2cqh rgba(0,0,0,0.7)",
-                pointerEvents: "none",
-              }}
-            >
-              {mm}:{ss}
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="absolute inset-0">
+      <VersusBackdrop />
+      <GoldFrame />
 
-      {/* CONTENT: QR + opciones */}
       <div
+        className="absolute"
         style={{
+          inset: "1.6cqh 1cqw",
+          zIndex: 4,
           display: "grid",
-          gridTemplateColumns: "minmax(0, 0.96fr) minmax(0, 1.04fr)",
-          columnGap: "2.1cqw",
-          minHeight: 0,
-          alignItems: "stretch",
+          gridTemplateRows: "auto 1fr",
+          rowGap: "2.4cqh",
+          padding: "3cqh 2cqw 1.4cqh",
         }}
       >
-        {/* Panel QR */}
-        <div
-          className="rounded-[3cqh]"
-          style={{
-            border: "1.5px solid rgba(255,255,255,0.16)",
-            background: "linear-gradient(155deg, rgba(255,255,255,0.06), rgba(10,1,24,0.94))",
-            boxShadow: "0 0 5.4cqh rgba(255,74,196,0.22), inset 0 0 9cqh rgba(255,74,196,0.09)",
-            padding: "2cqh 1.45cqw",
-            display: "grid",
-            gridTemplateRows: "auto auto minmax(0, 1fr)",
-            rowGap: "1.1cqh",
-            placeItems: "center",
-            minHeight: 0,
-            overflow: "hidden",
-            boxSizing: "border-box",
-          }}
-        >
+        {/* Título */}
+        <div className="flex flex-col items-center" style={{ textAlign: "center", gap: "1.4cqh" }}>
           <div
-            className="text-center"
             style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "5.6cqh",
-              lineHeight: 0.95,
-              color: "#ff8ad9",
-              letterSpacing: "0.15em",
-              textShadow: "0 0 3.3cqh rgba(255,74,196,0.6)",
-            }}
-          >
-            QUE ESCUCHAMOS??
-          </div>
-          <div
-            className="text-center"
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "4.2cqh",
+              fontFamily: "var(--font-sans)",
+              fontWeight: 700,
+              letterSpacing: "0.38em",
+              color: GOLD.lt,
+              fontSize: "2cqh",
+              textTransform: "uppercase",
               lineHeight: 1,
-              color: "#22d3ee",
-              letterSpacing: "0.12em",
-              textShadow: "0 0 3.1cqh rgba(34,211,238,0.6)",
             }}
           >
-            ESCANEÁ Y ELEGÍ
+            El versus del año
           </div>
           <div
             style={{
-              display: "grid",
-              placeItems: "center",
-              width: "100%",
-              height: "100%",
-              minHeight: 0,
-              overflow: "hidden",
+              fontFamily: "var(--font-cartel)",
+              fontSize: "7.8cqh",
+              lineHeight: 0.9,
+              color: "#fff",
+              letterSpacing: "0.01em",
+              textTransform: "uppercase",
+              textShadow: "0 0.3cqh 0 #000",
             }}
           >
-            <div
-              className="bg-white"
-              style={{
-                padding: "1.35cqh",
-                borderRadius: "1.9cqh",
-                boxShadow: "0 0 3.3cqh rgba(255,74,196,0.7)",
-                width: "min(100%, 39cqh)",
-                maxHeight: "100%",
-                aspectRatio: "1 / 1",
-                display: "grid",
-                placeItems: "center",
-                boxSizing: "border-box",
-              }}
-            >
-              <QRCodeSVG
-                value={url || "https://example.com/vote"}
-                size={512}
-                fgColor="#0a0118"
-                bgColor="#ffffff"
-                style={{ width: "100%", height: "100%", display: "block" }}
-              />
-            </div>
+            VOTÁ TU <span style={{ color: GOLD.base, WebkitTextStroke: `0.05cqh ${GOLD.dp}` }}>FAVORITO</span>
           </div>
         </div>
 
-        {/* Panel opciones */}
-        <div
-          className="rounded-[3cqh]"
-          style={{
-            border: "1.5px solid rgba(255,255,255,0.15)",
-            background: "linear-gradient(160deg, rgba(255,255,255,0.05), rgba(7,3,18,0.95))",
-            boxShadow: "0 0 4cqh rgba(122,31,214,0.20)",
-            padding: "1.45cqh 1.1cqw",
-            minHeight: 0,
-            display: "grid",
-            gridTemplateRows: "repeat(4, 1fr)",
-            rowGap: "1.1cqh",
-            overflow: "hidden",
-            boxSizing: "border-box",
-          }}
-        >
-          {session.songs.map((song, idx) => {
-            const color = colorForIndex(idx);
-            const count = counts[song.id] ?? 0;
-            const pct = total > 0 ? (count / total) * 100 : 0;
-            return (
-              <motion.div
-                key={song.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05, duration: 0.28 }}
-                className="rounded-[2cqh]"
+        {/* Arena */}
+        <div style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 0 }}>
+          <VersusSide side="left" song={A} pal={GOLD} pct={aPct} count={aCount} />
+          <VersusSide side="right" song={B} pal={VIOLET} pct={bPct} count={bCount} />
+
+          {/* Centro: QR + VS */}
+          <div
+            className="absolute"
+            style={{
+              left: "50%",
+              top: 0,
+              bottom: 0,
+              transform: "translateX(-50%)",
+              zIndex: 5,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              gap: "1cqh",
+              paddingTop: "1.4cqh",
+              pointerEvents: "none",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "0.9cqh",
+                background: "linear-gradient(160deg, rgba(231,177,12,.18), rgba(10,10,12,.94))",
+                border: `0.3cqh solid ${GOLD.base}`,
+                borderRadius: "1.6cqh",
+                padding: "1.4cqh 1.4cqh 1.2cqh",
+                boxShadow: "0 0 3cqh rgba(231,177,12,.4), 0 1cqh 3cqh rgba(0,0,0,.6)",
+              }}
+            >
+              <div
+                className="bg-white"
                 style={{
-                  padding: "1.1cqh 1.1cqw",
-                  border: `2px solid ${color}CC`,
-                  background: `linear-gradient(135deg, ${color}26, rgba(8,4,20,0.92))`,
-                  boxShadow: `0 0 2.4cqh ${color}44`,
-                  minHeight: 0,
+                  width: "19cqh",
+                  height: "19cqh",
+                  borderRadius: "1.1cqh",
+                  padding: "0.9cqh",
+                  boxShadow: "0 0 2.4cqh rgba(231,177,12,.55)",
                   display: "grid",
-                  gridTemplateColumns: "auto 1fr auto",
-                  columnGap: "1cqw",
-                  alignItems: "center",
-                  overflow: "hidden",
+                  placeItems: "center",
                   boxSizing: "border-box",
                 }}
               >
-                {/* Badge id */}
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "5.4cqh",
-                    height: "5.4cqh",
-                    borderRadius: "1.2cqh",
-                    background: color,
-                    color: "#000",
-                    fontFamily: "var(--font-display)",
-                    fontSize: "3.4cqh",
-                    lineHeight: 1,
-                    boxShadow: `0 0 2.2cqh ${color}AA`,
-                    flexShrink: 0,
-                  }}
-                >
-                  {song.id}
-                </div>
-
-                {/* Título + artista + barra */}
-                <div
-                  style={{
-                    minWidth: 0,
-                    display: "grid",
-                    gridTemplateRows: "1fr auto",
-                    rowGap: "0.55cqh",
-                    height: "100%",
-                    alignContent: "center",
-                  }}
-                >
-                  <div
-                    className="flex flex-col items-center justify-center text-center"
-                    style={{ minHeight: 0 }}
-                  >
-                    <div
-                      style={{
-                        fontFamily: "var(--font-display)",
-                        color: "#fff",
-                        fontSize: "min(6.4cqh, 5.8cqw)",
-                        lineHeight: 0.95,
-                        letterSpacing: "0.02em",
-                        textShadow: `0 0 2.2cqh ${color}AA`,
-                        wordBreak: "break-word",
-                      }}
-                    >
-                      {song.title || "—"}
-                    </div>
-                    {!!song.artist && (
-                      <div
-                        style={{
-                          fontFamily: "var(--font-serif)",
-                          color,
-                          fontStyle: "italic",
-                          fontSize: "2.25cqh",
-                          lineHeight: 1.1,
-                          marginTop: "0.4cqh",
-                        }}
-                      >
-                        {song.artist}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Barra progreso más visible */}
-                  <div
-                    className="rounded-full overflow-hidden"
-                    style={{
-                      height: "1.65cqh",
-                      background: "rgba(255,255,255,0.18)",
-                      border: `1px solid ${color}88`,
-                      boxShadow: `inset 0 0 0.8cqh rgba(0,0,0,0.55)`,
-                    }}
-                  >
-                    <motion.div
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.35, ease: "easeOut" }}
-                      style={{
-                        height: "100%",
-                        background: `linear-gradient(90deg, ${color}, #fff)`,
-                        boxShadow: `0 0 2.4cqh ${color}, inset 0 0 1cqh rgba(255,255,255,0.6)`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Métricas */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-end",
-                    justifyContent: "center",
-                    minWidth: "5.2cqw",
-                    flexShrink: 0,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      color,
-                      fontSize: "4.35cqh",
-                      lineHeight: 1,
-                      textShadow: `0 0 1.6cqh ${color}`,
-                    }}
-                  >
-                    {pct.toFixed(0)}%
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-sans)",
-                      color: "#fff",
-                      opacity: 0.9,
-                      fontSize: "1.85cqh",
-                      fontWeight: 600,
-                      marginTop: "0.4cqh",
-                    }}
-                  >
-                    {count} {count === 1 ? "voto" : "votos"}
-                  </span>
-                </div>
-              </motion.div>
-            );
-          })}
+                <QRCodeSVG
+                  value={url || "https://example.com/vote"}
+                  size={512}
+                  fgColor="#0a0a0c"
+                  bgColor="#ffffff"
+                  style={{ width: "100%", height: "100%", display: "block" }}
+                />
+              </div>
+              <div
+                style={{
+                  fontFamily: "var(--font-cartel)",
+                  fontSize: "3cqh",
+                  letterSpacing: "0.06em",
+                  color: "#fff",
+                  textTransform: "uppercase",
+                  textShadow: "0 0 1.6cqh rgba(231,177,12,.5)",
+                }}
+              >
+                Escaneá y votá
+              </div>
+            </div>
+            <img
+              src={versusVs}
+              alt="VS"
+              style={{
+                height: "30cqh",
+                marginTop: "0.4cqh",
+                filter: "drop-shadow(0 1.2cqh 2.2cqh rgba(0,0,0,.7)) drop-shadow(0 0 2.6cqh rgba(231,177,12,.5))",
+              }}
+            />
+          </div>
         </div>
       </div>
 
-      {/* FOOTER: contador global */}
+      {/* Pie */}
       <div
-        className="flex items-center justify-center"
+        className="absolute"
         style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "2.9cqh",
+          left: 0,
+          right: 0,
+          bottom: "2.2cqh",
+          textAlign: "center",
+          zIndex: 6,
+          fontFamily: "var(--font-sans)",
+          fontWeight: 700,
+          letterSpacing: "0.2em",
+          fontSize: "2.2cqh",
           color: "#fff",
-          letterSpacing: "0.09em",
+          textTransform: "uppercase",
+          textShadow: "0 0.2cqh 0.8cqh #000",
         }}
       >
-        <span
-          style={{
-            color: "#ff4ac4",
-            marginRight: "0.8cqw",
-            textShadow: "0 0 1.8cqh #ff4ac4",
-          }}
-        >
-          {total}
-        </span>
-        {total === 1 ? "VOTO REGISTRADO" : "VOTOS REGISTRADOS"}
+        <span style={{ color: GOLD.lt }}>{total}</span> {total === 1 ? "voto registrado" : "votos registrados"}
       </div>
     </div>
   );
 }
 
-function QRWaitingSideGlocks({ visible }: { visible: boolean }) {
+function VersusSide({
+  side,
+  song,
+  pal,
+  pct,
+  count,
+}: {
+  side: "left" | "right";
+  song: Song | undefined;
+  pal: { base: string; lt: string; dp: string };
+  pct: number;
+  count: number;
+}) {
+  const name = song?.title || "—";
   return (
-    <AnimatePresence>
-      {visible && (
-        <div className="pointer-events-none fixed inset-0 z-[1]" aria-hidden>
-          <motion.img
-            key="idle-glock-left"
-            src={glockLeft}
-            alt=""
-            draggable={false}
-            className="absolute h-auto w-[min(24vw,420px)]"
-            style={{
-              left: 0,
-              top: "54%",
-              objectFit: "contain",
-              objectPosition: "left center",
-              filter:
-                "drop-shadow(0 18px 42px rgba(0,0,0,0.62)) drop-shadow(0 0 34px rgba(255,74,196,0.32))",
-              transformOrigin: "left center",
-            }}
-            initial={{ x: "-100%", y: "-50%", opacity: 0, rotate: -2 }}
-            animate={{ x: 0, y: "-50%", opacity: 1, rotate: [-0.6, 0.4, -0.6] }}
-            exit={{ x: "-100%", y: "-50%", opacity: 0, rotate: -4 }}
-            transition={{
-              duration: 0.72,
-              ease: [0.22, 1, 0.36, 1],
-              rotate: { duration: 9, repeat: Infinity, ease: "easeInOut" },
-            }}
-          />
+    <div
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "2cqh 3cqw 0",
+        borderRight: side === "left" ? "0.15cqh solid rgba(231,177,12,.18)" : "none",
+      }}
+    >
+      {/* Relleno que sube de abajo hacia arriba */}
+      <div
+        className="absolute"
+        style={{
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: `${pct}%`,
+          zIndex: 0,
+          background: `linear-gradient(0deg, ${pal.base}8c 0%, ${pal.base}24 78%, ${pal.base}00 100%)`,
+          transition: "height 1s cubic-bezier(.22,1,.36,1)",
+        }}
+      >
+        <div
+          className="absolute"
+          style={{ left: 0, right: 0, top: 0, height: "0.5cqh", background: pal.lt, boxShadow: `0 0 2cqh ${pal.base}` }}
+        />
+      </div>
 
-          <motion.img
-            key="idle-glock-right"
-            src={glockRight}
-            alt=""
-            draggable={false}
-            className="absolute h-auto w-[min(24vw,420px)]"
+      {/* Gauge vertical en el borde exterior */}
+      <div
+        className="absolute"
+        style={{
+          top: "6cqh",
+          bottom: "10cqh",
+          left: side === "left" ? "2cqw" : undefined,
+          right: side === "right" ? "2cqw" : undefined,
+          width: "2cqh",
+          borderRadius: "1cqh",
+          zIndex: 3,
+          background: "rgba(0,0,0,.55)",
+          border: "0.2cqh solid rgba(231,177,12,.5)",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          className="absolute"
+          style={{
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: `${pct}%`,
+            borderRadius: "1cqh",
+            background: `linear-gradient(0deg, ${pal.dp}, ${pal.base}, ${pal.lt})`,
+            boxShadow: `0 0 2cqh ${pal.base}`,
+            transition: "height 1s ease",
+          }}
+        />
+      </div>
+
+      {/* Contenido */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        {song?.image ? (
+          <img
+            src={song.image}
+            alt={name}
             style={{
-              right: 0,
-              top: "52%",
-              objectFit: "contain",
-              objectPosition: "right center",
-              filter:
-                "drop-shadow(0 18px 42px rgba(0,0,0,0.62)) drop-shadow(0 0 34px rgba(122,31,214,0.32))",
-              transformOrigin: "right center",
-            }}
-            initial={{ x: "100%", y: "-50%", opacity: 0, rotate: 2 }}
-            animate={{ x: 0, y: "-50%", opacity: 1, rotate: [0.6, -0.4, 0.6] }}
-            exit={{ x: "100%", y: "-50%", opacity: 0, rotate: 4 }}
-            transition={{
-              duration: 0.72,
-              ease: [0.22, 1, 0.36, 1],
-              rotate: { duration: 9.4, repeat: Infinity, ease: "easeInOut" },
+              width: "min(27cqw, 30cqh)",
+              aspectRatio: "1 / 1",
+              objectFit: "cover",
+              border: `0.35cqh solid ${GOLD.base}`,
+              borderRadius: "1cqh",
+              boxShadow: "0 1cqh 3cqh rgba(0,0,0,.6), 0 0 2.6cqh rgba(231,177,12,.3)",
             }}
           />
+        ) : (
+          <div
+            style={{
+              width: "min(27cqw, 30cqh)",
+              aspectRatio: "1 / 1",
+              border: `0.35cqh solid ${GOLD.base}`,
+              borderRadius: "1cqh",
+              display: "grid",
+              placeItems: "center",
+              background: "rgba(255,255,255,0.04)",
+              boxShadow: "0 1cqh 3cqh rgba(0,0,0,.6), 0 0 2.6cqh rgba(231,177,12,.3)",
+              fontFamily: "var(--font-cartel)",
+              fontSize: "14cqh",
+              color: pal.lt,
+            }}
+          >
+            {name.charAt(0).toUpperCase()}
+          </div>
+        )}
+
+        <div
+          style={{
+            fontFamily: "var(--font-cartel)",
+            fontSize: "min(6.6cqh, 12cqw)",
+            lineHeight: 0.9,
+            color: "#fff",
+            textTransform: "uppercase",
+            textAlign: "center",
+            marginTop: "1.4cqh",
+            textShadow: "0 0.3cqh 0 #000",
+            wordBreak: "break-word",
+          }}
+        >
+          {name}
         </div>
-      )}
-    </AnimatePresence>
+
+        <div style={{ marginTop: "auto", paddingBottom: "5.2cqh", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div
+            style={{
+              fontFamily: "var(--font-cartel)",
+              fontSize: "10cqh",
+              lineHeight: 0.8,
+              color: pal.lt,
+              textShadow: `0 0 2.6cqh ${pal.base}99, 0 0.4cqh 0 #000`,
+            }}
+          >
+            {pct}%
+          </div>
+          <div
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontWeight: 600,
+              fontSize: "2.3cqh",
+              letterSpacing: "0.14em",
+              color: "#fff",
+              textTransform: "uppercase",
+              marginTop: "0.3cqh",
+            }}
+          >
+            {count} {count === 1 ? "voto" : "votos"}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
-function ActiveVoteCornerGlock({ visible }: { visible: boolean }) {
+/* ======================= ESPERA / CONTEO / GANADOR ======================= */
+
+function IdleScreen({ url }: { url: string }) {
   return (
-    <AnimatePresence>
-      {visible && (
-        <motion.img
-          key="active-vote-corner-glock"
-          src={armitaFiestaGlock}
-          alt=""
-          draggable={false}
-          className="pointer-events-none absolute z-[2]"
+    <div
+      className="absolute inset-0"
+      style={{ zIndex: 3, display: "grid", placeItems: "center", padding: "7cqh 7cqw", overflow: "hidden" }}
+    >
+      <VersusBackdrop />
+      <GoldFrame />
+      <div
+        className="rounded-[3cqh]"
+        style={{
+          position: "relative",
+          zIndex: 2,
+          width: "min(50cqw, 55cqh)",
+          maxWidth: "100%",
+          border: `1.5px solid ${GOLD.base}`,
+          background: "linear-gradient(155deg, rgba(231,177,12,0.12), rgba(10,10,12,0.94))",
+          boxShadow: "0 0 5cqh rgba(231,177,12,0.24), inset 0 0 8cqh rgba(231,177,12,0.08)",
+          padding: "2.4cqh 2cqw 2.6cqh",
+          display: "grid",
+          gridTemplateRows: "auto auto minmax(0, 1fr)",
+          rowGap: "1.2cqh",
+          placeItems: "center",
+          minHeight: 0,
+        }}
+      >
+        <p
+          className="text-center"
           style={{
-            width: "min(16vw, 250px)",
-            left: 34,
-            bottom: 28,
-            filter:
-              "drop-shadow(0 18px 42px rgba(0,0,0,0.6)) drop-shadow(0 0 30px rgba(255,74,196,0.26))",
-            transformOrigin: "left bottom",
+            fontFamily: "var(--font-cartel)",
+            fontSize: "5.7cqh",
+            lineHeight: 0.95,
+            color: GOLD.lt,
+            letterSpacing: "0.06em",
+            textShadow: "0 0 3cqh rgba(231,177,12,0.55)",
+            margin: 0,
           }}
-          initial={{ opacity: 0, x: -34, y: 24, scale: 0.9, rotate: -3 }}
-          animate={{ opacity: 0.96, x: 0, y: [0, -5, 0], scale: 1, rotate: [-1.2, 0.8, -1.2] }}
-          exit={{ opacity: 0, x: -28, y: 22, scale: 0.92 }}
-          transition={{
-            duration: 0.7,
-            ease: [0.22, 1, 0.36, 1],
-            y: { duration: 7.5, repeat: Infinity, ease: "easeInOut" },
-            rotate: { duration: 8.2, repeat: Infinity, ease: "easeInOut" },
+        >
+          EL VERSUS DEL AÑO
+        </p>
+        <p
+          className="text-center"
+          style={{ fontFamily: "var(--font-cartel)", fontSize: "3.9cqh", lineHeight: 1, color: "#ffffff", letterSpacing: "0.06em", margin: 0 }}
+        >
+          ESCANEÁ Y VOTÁ
+        </p>
+        <div
+          className="bg-white"
+          style={{
+            width: "min(100%, 39cqh)",
+            aspectRatio: "1 / 1",
+            padding: "1.35cqh",
+            borderRadius: "1.9cqh",
+            boxShadow: "0 0 3.3cqh rgba(231,177,12,0.7)",
+            display: "grid",
+            placeItems: "center",
+            boxSizing: "border-box",
           }}
-        />
-      )}
-    </AnimatePresence>
+        >
+          <QRCodeSVG
+            value={url || "https://example.com/vote"}
+            size={512}
+            fgColor="#0a0a0c"
+            bgColor="#ffffff"
+            style={{ width: "100%", height: "100%", display: "block" }}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
 function RevealingScreen({ total }: { total: number }) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ gap: 40 }}>
-      <RevealSideGlocks visible={true} />
-
+      <VersusBackdrop />
+      <GoldFrame />
       <div className="maruja-pulse text-center" style={{ position: "relative", zIndex: 2 }}>
-        <div
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: 140,
-            color: "#fff",
-            letterSpacing: "0.1em",
-            lineHeight: 1,
-          }}
-        >
+        <div style={{ fontFamily: "var(--font-cartel)", fontSize: "13cqh", color: "#fff", letterSpacing: "0.04em", lineHeight: 1 }}>
           CONTANDO VOTOS…
         </div>
-        <div
-          style={{ fontFamily: "var(--font-sans)", fontSize: 42, color: "#ff4ac4", marginTop: 24 }}
-        >
+        <div style={{ fontFamily: "var(--font-sans)", fontSize: "4cqh", color: GOLD.lt, marginTop: "2cqh" }}>
           {total} {total === 1 ? "voto" : "votos"}
         </div>
       </div>
@@ -742,28 +577,18 @@ function WinnerScreen({
     return best;
   }, [session.winner_id, session.songs, counts]);
 
-  const winnerIdx = Math.max(
-    0,
-    session.songs.findIndex((s) => s.id === winnerId),
-  );
+  const winnerIdx = Math.max(0, session.songs.findIndex((s) => s.id === winnerId));
   const winner = session.songs.find((s) => s.id === winnerId);
-  const winnerColor = colorForIndex(winnerIdx);
-
-  const titleLen = (winner?.title ?? "").length;
-  const titleSize = titleLen > 28 ? 140 : titleLen > 18 ? 180 : 220;
+  const pal = winnerIdx === 1 ? VIOLET : GOLD;
 
   return (
-    <div
-      className="absolute inset-0 flex flex-col items-center justify-center"
-      style={{ padding: "96px 140px" }}
-    >
+    <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ padding: "6cqh 8cqw" }}>
+      <VersusBackdrop />
+      <GoldFrame />
       <Confetti count={64} />
-      <StageSideGlocks />
       <div
         className="absolute inset-0 maruja-pulse"
-        style={{
-          background: `radial-gradient(circle at 50% 45%, ${winnerColor}33, transparent 60%)`,
-        }}
+        style={{ background: `radial-gradient(circle at 50% 45%, ${pal.base}33, transparent 60%)`, zIndex: 1 }}
         aria-hidden
       />
 
@@ -773,39 +598,64 @@ function WinnerScreen({
           initial={{ scale: 0, rotate: -20 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: "spring", bounce: 0.55, duration: 0.9 }}
-          className="maruja-glow-dorado rounded-full"
+          className="rounded-full"
           style={{
-            padding: "14px 56px",
-            background: "linear-gradient(135deg, #C9A84C, #E8C96A, #C9A84C)",
-            fontFamily: "var(--font-display)",
-            fontSize: 48,
-            color: "#0a0118",
+            position: "relative",
+            zIndex: 2,
+            padding: "1.2cqh 4cqw",
+            background: `linear-gradient(135deg, ${GOLD.dp}, ${GOLD.lt}, ${GOLD.dp})`,
+            fontFamily: "var(--font-cartel)",
+            fontSize: "4.4cqh",
+            color: "#0a0a0c",
             letterSpacing: "0.18em",
-            marginBottom: 36,
+            marginBottom: "3cqh",
           }}
         >
           ★ GANADOR ★
         </motion.div>
 
+        {winner?.image && (
+          <motion.img
+            key="winner-photo"
+            src={winner.image}
+            alt={winner.title}
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", bounce: 0.4, duration: 1, delay: 0.15 }}
+            style={{
+              position: "relative",
+              zIndex: 2,
+              width: "min(34cqh, 32cqw)",
+              aspectRatio: "1 / 1",
+              objectFit: "cover",
+              border: `0.4cqh solid ${GOLD.base}`,
+              borderRadius: "1.4cqh",
+              boxShadow: `0 1.4cqh 4cqh rgba(0,0,0,.65), 0 0 4cqh ${pal.base}66`,
+              marginBottom: "3cqh",
+            }}
+          />
+        )}
+
         <motion.div
           key="title"
           initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", bounce: 0.4, duration: 1.0, delay: 0.2 }}
+          transition={{ type: "spring", bounce: 0.4, duration: 1.0, delay: 0.25 }}
           className="text-center"
-          style={{ maxWidth: 1600 }}
+          style={{ position: "relative", zIndex: 2, maxWidth: "84cqw" }}
         >
           <div
             style={{
-              fontFamily: "var(--font-display)",
-              fontSize: titleSize,
-              lineHeight: 0.95,
-              background: "linear-gradient(135deg, #ffffff, #E8C96A 40%, #ff4ac4 100%)",
+              fontFamily: "var(--font-cartel)",
+              fontSize: "14cqh",
+              lineHeight: 0.9,
+              background: `linear-gradient(135deg, #ffffff, ${GOLD.lt} 45%, ${pal.base} 100%)`,
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               color: "transparent",
-              textShadow: `0 0 60px ${winnerColor}88`,
+              textShadow: `0 0 6cqh ${pal.base}55`,
               letterSpacing: "0.02em",
+              textTransform: "uppercase",
               wordBreak: "break-word",
             }}
           >
@@ -813,22 +663,13 @@ function WinnerScreen({
           </div>
           <div
             style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: 64,
-              color: "#ff4ac4",
-              marginTop: 24,
-              fontStyle: "italic",
-            }}
-          >
-            {winner?.artist ?? ""}
-          </div>
-          <div
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: 44,
-              color: "#E8C96A",
-              marginTop: 40,
+              fontFamily: "var(--font-sans)",
+              fontWeight: 700,
+              fontSize: "3.4cqh",
+              color: GOLD.lt,
+              marginTop: "3cqh",
               letterSpacing: "0.12em",
+              textTransform: "uppercase",
             }}
           >
             {total} {total === 1 ? "VOTO" : "VOTOS"} EN TOTAL
@@ -839,122 +680,19 @@ function WinnerScreen({
   );
 }
 
-function RevealSideGlocks({ visible }: { visible: boolean }) {
+// Glocks laterales legacy (no usados en versus, se conservan por compatibilidad)
+export function LegacySideGlocks({ visible }: { visible: boolean }) {
   return (
     <AnimatePresence>
       {visible && (
         <div className="pointer-events-none fixed inset-0 z-[1]" aria-hidden>
-          <motion.img
-            key="reveal-glock-left"
-            src={glockLeft}
-            alt=""
-            draggable={false}
-            className="absolute h-auto w-[min(24vw,420px)]"
-            style={{
-              left: 0,
-              top: "54%",
-              objectFit: "contain",
-              objectPosition: "left center",
-              filter:
-                "drop-shadow(0 18px 42px rgba(0,0,0,0.62)) drop-shadow(0 0 34px rgba(255,74,196,0.32))",
-              transformOrigin: "left center",
-            }}
-            initial={{ x: "-100%", y: "-50%", opacity: 0, rotate: -2 }}
-            animate={{ x: 0, y: "-50%", opacity: 1, rotate: [-0.6, 0.4, -0.6] }}
-            exit={{ x: "-100%", y: "-50%", opacity: 0, rotate: -4 }}
-            transition={{
-              duration: 0.72,
-              ease: [0.22, 1, 0.36, 1],
-              rotate: { duration: 9, repeat: Infinity, ease: "easeInOut" },
-            }}
-          />
-
-          <motion.img
-            key="reveal-glock-right"
-            src={glockRight}
-            alt=""
-            draggable={false}
-            className="absolute h-auto w-[min(24vw,420px)]"
-            style={{
-              right: 0,
-              top: "52%",
-              objectFit: "contain",
-              objectPosition: "right center",
-              filter:
-                "drop-shadow(0 18px 42px rgba(0,0,0,0.62)) drop-shadow(0 0 34px rgba(122,31,214,0.32))",
-              transformOrigin: "right center",
-            }}
-            initial={{ x: "100%", y: "-50%", opacity: 0, rotate: 2 }}
-            animate={{ x: 0, y: "-50%", opacity: 1, rotate: [0.6, -0.4, 0.6] }}
-            exit={{ x: "100%", y: "-50%", opacity: 0, rotate: 4 }}
-            transition={{
-              duration: 0.72,
-              ease: [0.22, 1, 0.36, 1],
-              rotate: { duration: 9.4, repeat: Infinity, ease: "easeInOut" },
-            }}
-          />
+          <motion.img src={glockLeft} alt="" className="absolute h-auto w-[min(24vw,420px)]" style={{ left: 0, top: "54%" }} />
+          <motion.img src={glockRight} alt="" className="absolute h-auto w-[min(24vw,420px)]" style={{ right: 0, top: "52%" }} />
         </div>
       )}
     </AnimatePresence>
   );
 }
 
-function WinnerSideGlocks({ visible }: { visible: boolean }) {
-  return (
-    <AnimatePresence>
-      {visible && (
-        <div className="pointer-events-none fixed inset-0 z-[1]" aria-hidden>
-          <motion.img
-            key="winner-glock-left"
-            src={glockLeft}
-            alt=""
-            draggable={false}
-            className="absolute h-auto w-[min(24vw,420px)]"
-            style={{
-              left: 0,
-              top: "54%",
-              objectFit: "contain",
-              objectPosition: "left center",
-              filter:
-                "drop-shadow(0 18px 42px rgba(0,0,0,0.62)) drop-shadow(0 0 34px rgba(255,74,196,0.32))",
-              transformOrigin: "left center",
-            }}
-            initial={{ x: "-100%", y: "-50%", opacity: 0, rotate: -2 }}
-            animate={{ x: 0, y: "-50%", opacity: 1, rotate: [-0.6, 0.4, -0.6] }}
-            exit={{ x: "-100%", y: "-50%", opacity: 0, rotate: -4 }}
-            transition={{
-              duration: 0.72,
-              ease: [0.22, 1, 0.36, 1],
-              rotate: { duration: 9, repeat: Infinity, ease: "easeInOut" },
-            }}
-          />
-
-          <motion.img
-            key="winner-glock-right"
-            src={glockRight}
-            alt=""
-            draggable={false}
-            className="absolute h-auto w-[min(24vw,420px)]"
-            style={{
-              right: 0,
-              top: "52%",
-              objectFit: "contain",
-              objectPosition: "right center",
-              filter:
-                "drop-shadow(0 18px 42px rgba(0,0,0,0.62)) drop-shadow(0 0 34px rgba(122,31,214,0.32))",
-              transformOrigin: "right center",
-            }}
-            initial={{ x: "100%", y: "-50%", opacity: 0, rotate: 2 }}
-            animate={{ x: 0, y: "-50%", opacity: 1, rotate: [0.6, -0.4, 0.6] }}
-            exit={{ x: "100%", y: "-50%", opacity: 0, rotate: 4 }}
-            transition={{
-              duration: 0.72,
-              ease: [0.22, 1, 0.36, 1],
-              rotate: { duration: 9.4, repeat: Infinity, ease: "easeInOut" },
-            }}
-          />
-        </div>
-      )}
-    </AnimatePresence>
-  );
-}
+// Marca de agua legacy (evita import sin uso de glockLogo)
+export const LEGACY_LOGO = glockLogo;
