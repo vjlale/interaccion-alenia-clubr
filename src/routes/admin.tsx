@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
-import { useActiveSession, useVotes, useCountdown, formatMSS } from "@/lib/maruja/useSession";
+import { useActiveSession, useVotes } from "@/lib/maruja/useSession";
 import { colorForIndex, optionLabel, type Song, type SessionStatus } from "@/lib/maruja/types";
 import { Wordmark } from "@/components/maruja/Wordmark";
 import { ObsOutputPanel } from "@/components/maruja/ObsOutputPanel";
@@ -46,7 +46,7 @@ function AdminPage() {
   const { session, connected, refetch } = useActiveSession();
   const { counts, total } = useVotes(session?.id);
   const [songs, setSongs] = useState<Song[]>(normalizeSongs(undefined));
-  const [duration, setDuration] = useState(60);
+  const [duration] = useState(3600); // sin temporizador; valor alto e inocuo
   const [voteUrl, setVoteUrl] = useState("");
   const [savedMsg, setSavedMsg] = useState("");
 
@@ -55,7 +55,6 @@ function AdminPage() {
   useEffect(() => {
     if (!session) return;
     if (session.songs?.length) setSongs(normalizeSongs(session.songs));
-    if (session.duration_sec) setDuration(session.duration_sec);
   }, [session?.id]);
 
   const status = session?.status ?? "idle";
@@ -63,17 +62,7 @@ function AdminPage() {
   const isVoting = status === "voting";
   const hasValidTitles = songs.length > 0 && songs.every((s) => s.title.trim().length > 0);
 
-  const { remaining } = useCountdown(session?.started_at ?? null, session?.duration_sec ?? 0);
-
-  useEffect(() => {
-    if (isVoting && remaining <= 0 && session) {
-      supabase.from("sessions").update({ status: "revealing" }).eq("id", session.id);
-      setTimeout(() => {
-        const winnerId = computeWinner(songs, counts);
-        supabase.from("sessions").update({ status: "winner", winner_id: winnerId }).eq("id", session.id);
-      }, 2200);
-    }
-  }, [isVoting, remaining, session?.id, songs, counts]);
+  // Sin temporizador: el ganador se revela manualmente con el botón "REVELAR GANADOR".
 
   const ensureSession = async () => {
     if (session) return session.id;
@@ -248,23 +237,6 @@ function AdminPage() {
             + AGREGAR OPCIÓN
           </button>
 
-          <div className="mt-6">
-            <label className="flex items-center justify-between" style={{ color: "#fff", fontFamily: "var(--font-sans)" }}>
-              <span>Tiempo de votación</span>
-              <span style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", color: "#ff4ac4" }}>
-                {formatMSS(duration)}
-              </span>
-            </label>
-            <input
-              type="range" min={15} max={300} step={15}
-              disabled={!isIdle}
-              value={duration}
-              onChange={(e) => setDuration(Number(e.target.value))}
-              className="w-full mt-2"
-              style={{ accentColor: "#ff4ac4" }}
-            />
-          </div>
-
           <button
             onClick={applyConfig}
             disabled={!isIdle || !hasValidTitles}
@@ -293,16 +265,16 @@ function AdminPage() {
 
             {isVoting && session && (
               <div className="mb-6 flex items-center justify-between p-4 rounded-xl"
-                style={{ background: "rgba(225,47,190,0.1)", border: "1px solid rgba(225,47,190,0.3)" }}>
+                style={{ background: "rgba(231,177,12,0.1)", border: "1px solid rgba(231,177,12,0.3)" }}>
                 <div>
-                  <div style={{ fontFamily: "var(--font-sans)", color: "#ccc", fontSize: "0.85rem" }}>Tiempo restante</div>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: "2.8rem", color: "#fff" }}>
-                    {formatMSS(remaining)}
+                  <div style={{ fontFamily: "var(--font-sans)", color: "#ccc", fontSize: "0.85rem" }}>Estado</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: "1.8rem", color: "#fff" }}>
+                    VOTACIÓN ABIERTA
                   </div>
                 </div>
                 <div className="text-right">
                   <div style={{ fontFamily: "var(--font-sans)", color: "#ccc", fontSize: "0.85rem" }}>Votos</div>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: "2.8rem", color: "#ff4ac4" }}>{total}</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: "2.8rem", color: "#E7B10C" }}>{total}</div>
                 </div>
               </div>
             )}
