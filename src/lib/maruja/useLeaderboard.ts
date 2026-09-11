@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { submitScore } from "./game.functions";
+
 
 export type GameScore = {
   id: string;
@@ -51,8 +53,11 @@ export async function saveScore(
 ) {
   const name = playerName.trim().slice(0, 24);
   if (name.length < 1) return { error: "Poné tu nombre" };
-  const { error } = await supabase
-    .from("game_scores")
-    .insert({ player_name: name, score, session_id: sessionId });
-  return { error: error?.message ?? null };
+  try {
+    await submitScore({ data: { playerName: name, score, sessionId } });
+    return { error: null };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "No se pudo guardar el puntaje" };
+  }
 }
+

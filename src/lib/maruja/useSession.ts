@@ -47,9 +47,10 @@ export function useVotes(sessionId: string | undefined) {
     }
     const { data } = await supabase
       .from("votes")
-      .select("*")
+      .select("id, session_id, song_id, created_at")
       .eq("session_id", sessionId);
     setVotes((data as Vote[]) ?? []);
+
   }, [sessionId]);
 
   useEffect(() => {

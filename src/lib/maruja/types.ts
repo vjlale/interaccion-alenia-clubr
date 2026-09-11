@@ -21,9 +21,9 @@ export type Vote = {
   id: string;
   session_id: string;
   song_id: string;
-  voter_id: string;
   created_at: string;
 };
+
 
 // Versus Club Reggaeton XL: opción A dorado, opción B violeta.
 export const OPTION_COLORS = ["#E7B10C", "#9B2FE0", "#5FE88E", "#F0654F"] as const;
