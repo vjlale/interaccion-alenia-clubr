@@ -9,13 +9,30 @@ import { Confetti } from "@/components/maruja/Confetti";
 import versusVs from "@/assets/versus-vs.png";
 import aleniaLogo from "@/assets/build-by-alenia.png";
 
+const OG_IMAGE =
+  "https://maruja-app-charm.lovable.app/__l5e/assets-v1/eabea86f-a0ce-44f0-88e9-276ec44a4fb8/club-reggaeton-og.jpg";
+const VOTE_URL = "https://maruja-app-charm.lovable.app/vote";
+const VOTE_TITLE = "Club Reggaeton XL — Votá ahora";
+const VOTE_DESC =
+  "Entrá a Club Reggaeton XL y votá en vivo desde tu celular: participá del versus del año y ayudá a elegir al ganador.";
+
 export const Route = createFileRoute("/vote")({
   head: () => ({
     meta: [
-      { title: "Club Reggaeton XL — Votá ahora" },
-      { name: "description", content: "Votá en vivo desde tu celular y participá del versus del año." },
+      { title: VOTE_TITLE },
+      { name: "description", content: VOTE_DESC },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" },
+      { property: "og:title", content: VOTE_TITLE },
+      { property: "og:description", content: VOTE_DESC },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: VOTE_URL },
+      { property: "og:image", content: OG_IMAGE },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: VOTE_TITLE },
+      { name: "twitter:description", content: VOTE_DESC },
+      { name: "twitter:image", content: OG_IMAGE },
     ],
+    links: [{ rel: "canonical", href: VOTE_URL }],
   }),
   component: VotePage,
 });
