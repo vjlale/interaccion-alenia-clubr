@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveSession, useVotes } from "@/lib/maruja/useSession";
+import { createSessionFn, updateSessionFn } from "@/lib/maruja/session.functions";
+
 import { colorForIndex, optionLabel, type Song, type SessionStatus } from "@/lib/maruja/types";
 import { ObsOutputPanel } from "@/components/maruja/ObsOutputPanel";
 
