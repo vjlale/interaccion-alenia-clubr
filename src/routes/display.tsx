@@ -168,7 +168,7 @@ function VotingScreen({
           display: "grid",
           gridTemplateRows: "auto 1fr",
           rowGap: "2.4cqh",
-          padding: "3cqh 2cqw 1.4cqh",
+          padding: "1.6cqh 2cqw 1.4cqh",
         }}
       >
         {/* Título */}
@@ -290,7 +290,7 @@ function VotingScreen({
         style={{
           left: 0,
           right: 0,
-          bottom: "2.2cqh",
+          bottom: "4.2cqh",
           textAlign: "center",
           zIndex: 6,
           fontFamily: "var(--font-sans)",
