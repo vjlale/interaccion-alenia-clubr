@@ -35,16 +35,15 @@ function VotePage() {
     if (!session?.id || !voterId) return;
     let cancel = false;
     (async () => {
-      const { data } = await supabase
-        .from("votes")
-        .select("song_id")
-        .eq("session_id", session.id)
-        .eq("voter_id", voterId)
-        .maybeSingle();
-      if (!cancel) setMyVote((data?.song_id as string | undefined) ?? null);
+      const { data } = await supabase.rpc("my_vote", {
+        _session_id: session.id,
+        _voter_id: voterId,
+      });
+      if (!cancel) setMyVote((data as string | null) ?? null);
     })();
     return () => { cancel = true; };
   }, [session?.id, voterId]);
+
 
   useEffect(() => {
     if (session?.status === "idle") setMyVote(null);

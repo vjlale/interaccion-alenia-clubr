@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { supabase } from "@/integrations/supabase/client";
 import { useActiveSession, useVotes } from "@/lib/maruja/useSession";
+import { createSessionFn, updateSessionFn } from "@/lib/maruja/session.functions";
+
 import { colorForIndex, optionLabel, type Song, type SessionStatus } from "@/lib/maruja/types";
 import { ObsOutputPanel } from "@/components/maruja/ObsOutputPanel";
 
@@ -90,19 +91,19 @@ function AdminPage() {
 
   const ensureSession = async () => {
     if (session) return session.id;
-    const { data } = await supabase
-      .from("sessions")
-      .insert({ status: "idle", songs: normalizeSongs(songs), duration_sec: duration })
-      .select()
-      .single();
+    const res = await createSessionFn({
+      data: { status: "idle", songs: normalizeSongs(songs), duration_sec: duration },
+    });
     refetch();
-    return data?.id as string;
+    return res?.id as string;
   };
 
   const applyConfig = async () => {
     const id = await ensureSession();
     if (!id) return;
-    await supabase.from("sessions").update({ songs: normalizeSongs(songs), duration_sec: duration }).eq("id", id);
+    await updateSessionFn({
+      data: { id, patch: { songs: normalizeSongs(songs), duration_sec: duration } },
+    });
     setSavedMsg("¡Configuración aplicada!");
     setTimeout(() => setSavedMsg(""), 2200);
     refetch();
@@ -112,36 +113,44 @@ function AdminPage() {
     if (!hasValidTitles) return;
     const id = await ensureSession();
     if (!id) return;
-    await supabase.from("sessions")
-      .update({
-        songs: normalizeSongs(songs),
-        duration_sec: duration,
-        status: "voting",
-        started_at: new Date().toISOString(),
-        winner_id: null,
-      })
-      .eq("id", id);
+    await updateSessionFn({
+      data: {
+        id,
+        patch: {
+          songs: normalizeSongs(songs),
+          duration_sec: duration,
+          status: "voting",
+          started_at: new Date().toISOString(),
+          winner_id: null,
+        },
+      },
+    });
     refetch();
   };
 
   const revealWinner = async () => {
     if (!session) return;
-    await supabase.from("sessions").update({ status: "revealing" }).eq("id", session.id);
+    await updateSessionFn({ data: { id: session.id, patch: { status: "revealing" } } });
     setTimeout(async () => {
       const winnerId = computeWinner(songs, counts);
-      await supabase.from("sessions").update({ status: "winner", winner_id: winnerId }).eq("id", session.id);
+      await updateSessionFn({
+        data: { id: session.id, patch: { status: "winner", winner_id: winnerId } },
+      });
     }, 1800);
   };
 
   const reset = async () => {
-    await supabase.from("sessions").insert({
-      status: "idle",
-      songs: [makeSong(0), makeSong(1)],
-      duration_sec: duration,
+    await createSessionFn({
+      data: {
+        status: "idle",
+        songs: [makeSong(0), makeSong(1)],
+        duration_sec: duration,
+      },
     });
     setSongs([makeSong(0), makeSong(1)]);
     refetch();
   };
+
 
   const addOption = () => {
     if (!isIdle || songs.length >= MAX_OPTIONS) return;
