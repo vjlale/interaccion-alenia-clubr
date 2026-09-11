@@ -351,7 +351,7 @@ function VersusSide({
           height: `${pct}%`,
           zIndex: 0,
           background: `linear-gradient(0deg, ${pal.base}8c 0%, ${pal.base}24 78%, ${pal.base}00 100%)`,
-          transition: "height 1s cubic-bezier(.22,1,.36,1)",
+          transition: "height 420ms cubic-bezier(.22,1,.36,1)",
         }}
       >
         <div
@@ -386,7 +386,7 @@ function VersusSide({
             borderRadius: "1cqh",
             background: `linear-gradient(0deg, ${pal.dp}, ${pal.base}, ${pal.lt})`,
             boxShadow: `0 0 2cqh ${pal.base}`,
-            transition: "height 1s ease",
+            transition: "height 420ms cubic-bezier(.22,1,.36,1)",
           }}
         />
       </div>
