@@ -7,7 +7,7 @@ import { colorForIndex, type Song } from "@/lib/maruja/types";
 import { getVoterId } from "@/lib/maruja/voter";
 import { Confetti } from "@/components/maruja/Confetti";
 import versusVs from "@/assets/versus-vs.png";
-import aleniaLogo from "@/assets/Alenia-logo.webp";
+import aleniaLogo from "@/assets/build-by-alenia.png";
 
 export const Route = createFileRoute("/vote")({
   head: () => ({

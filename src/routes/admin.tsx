@@ -4,7 +4,6 @@ import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveSession, useVotes } from "@/lib/maruja/useSession";
 import { colorForIndex, optionLabel, type Song, type SessionStatus } from "@/lib/maruja/types";
-import { Wordmark } from "@/components/maruja/Wordmark";
 import { ObsOutputPanel } from "@/components/maruja/ObsOutputPanel";
 
 export const Route = createFileRoute("/admin")({
@@ -20,9 +19,9 @@ export const Route = createFileRoute("/admin")({
 
 const STATUS_STYLE: Record<SessionStatus, { bg: string; label: string }> = {
   idle: { bg: "#555", label: "INACTIVO" },
-  voting: { bg: "#ff4ac4", label: "VOTANDO" },
+  voting: { bg: "#E7B10C", label: "VOTANDO" },
   revealing: { bg: "#C9A84C", label: "REVELANDO" },
-  winner: { bg: "#9B7B1A", label: "GANADORA" },
+  winner: { bg: "#9B7B1A", label: "GANADOR" },
 };
 
 const MIN_OPTIONS = 1;
@@ -169,7 +168,9 @@ function AdminPage() {
     <div className="min-h-screen w-full p-6 md:p-10">
       <div className="maruja-panel p-5 mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Wordmark size="2.4rem" />
+          <span style={{ fontFamily: "var(--font-cartel)", fontSize: "2rem", color: "#fff", letterSpacing: "0.02em", textTransform: "uppercase", lineHeight: 1 }}>
+            CLUB REGGAETON <span style={{ color: "#E7B10C" }}>XL</span>
+          </span>
           <span style={{ fontFamily: "var(--font-serif)", color: "#ccc", fontStyle: "italic" }}>
             Panel de control
           </span>
@@ -323,12 +324,12 @@ function AdminPage() {
             disabled={!isIdle || !hasValidTitles}
             className="w-full mt-6 py-3 rounded-xl font-bold disabled:opacity-40"
             style={{
-              background: "linear-gradient(135deg, #b0187a, #ff4ac4)",
-              color: "#fff",
+              background: "linear-gradient(135deg, #9A7407, #E7B10C)",
+              color: "#0a0a0c",
               fontFamily: "var(--font-display)",
               letterSpacing: "0.1em",
               fontSize: "1.1rem",
-              boxShadow: "0 0 20px rgba(225,47,190,0.4)",
+              boxShadow: "0 0 20px rgba(231,177,12,0.4)",
             }}
           >
             APLICAR CONFIGURACIÓN
@@ -431,7 +432,7 @@ function AdminPage() {
             </div>
             <div className="flex-1 min-w-0">
               <div style={{ fontFamily: "var(--font-display)", color: "#fff", letterSpacing: "0.08em" }}>QR DE VOTACIÓN</div>
-              <div className="truncate" style={{ fontFamily: "var(--font-sans)", color: "#ff4ac4", fontSize: "0.9rem" }}>
+              <div className="truncate" style={{ fontFamily: "var(--font-sans)", color: "#E7B10C", fontSize: "0.9rem" }}>
                 {voteUrl}
               </div>
               <div className="flex items-center gap-2 mt-2 flex-wrap">

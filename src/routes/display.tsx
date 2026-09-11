@@ -9,6 +9,7 @@ import glockRight from "@/assets/glock-right.png";
 import glockLogo from "@/assets/glockfinal1.png";
 import versusVs from "@/assets/versus-vs.png";
 import versusBg from "@/assets/versus-bg.jpg";
+import buildByAlenia from "@/assets/build-by-alenia.png";
 import { Confetti } from "@/components/maruja/Confetti";
 import { DisplayStage } from "@/components/maruja/DisplayStage";
 
@@ -226,10 +227,10 @@ function VotingScreen({
               <div
                 className="bg-white"
                 style={{
-                  width: "19cqh",
-                  height: "19cqh",
+                  width: "23cqh",
+                  height: "23cqh",
                   borderRadius: "1.1cqh",
-                  padding: "0.9cqh",
+                  padding: "1cqh",
                   boxShadow: "0 0 2.4cqh rgba(231,177,12,.55)",
                   display: "grid",
                   placeItems: "center",
@@ -261,7 +262,7 @@ function VotingScreen({
               src={versusVs}
               alt="VS"
               style={{
-                height: "30cqh",
+                height: "26cqh",
                 marginTop: "0.4cqh",
                 filter: "drop-shadow(0 1.2cqh 2.2cqh rgba(0,0,0,.7)) drop-shadow(0 0 2.6cqh rgba(231,177,12,.5))",
               }}
@@ -290,6 +291,13 @@ function VotingScreen({
       >
         <span style={{ color: GOLD.lt }}>{total}</span> {total === 1 ? "voto registrado" : "votos registrados"}
       </div>
+
+      <img
+        src={buildByAlenia}
+        alt="Build by Alenia"
+        className="absolute"
+        style={{ right: "2.4cqw", bottom: "2cqh", height: "5cqh", opacity: 0.9, zIndex: 6, filter: "drop-shadow(0 0.2cqh 0.6cqh rgba(0,0,0,.6))" }}
+      />
     </div>
   );
 }
