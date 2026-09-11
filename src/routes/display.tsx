@@ -168,7 +168,7 @@ function VotingScreen({
           display: "grid",
           gridTemplateRows: "auto 1fr",
           rowGap: "2.4cqh",
-          padding: "1.6cqh 2cqw 1.4cqh",
+          padding: "2.6cqh 2cqw 5cqh",
         }}
       >
         {/* Título */}
@@ -177,9 +177,9 @@ function VotingScreen({
             style={{
               fontFamily: "var(--font-sans)",
               fontWeight: 700,
-              letterSpacing: "0.38em",
+              letterSpacing: "0.3em",
               color: GOLD.lt,
-              fontSize: "2cqh",
+              fontSize: "2.6cqh",
               textTransform: "uppercase",
               lineHeight: 1,
             }}
@@ -290,13 +290,13 @@ function VotingScreen({
         style={{
           left: 0,
           right: 0,
-          bottom: "4.2cqh",
+          bottom: "5.2cqh",
           textAlign: "center",
           zIndex: 6,
           fontFamily: "var(--font-sans)",
           fontWeight: 700,
           letterSpacing: "0.2em",
-          fontSize: "2.2cqh",
+          fontSize: "2.6cqh",
           color: "#fff",
           textTransform: "uppercase",
           textShadow: "0 0.2cqh 0.8cqh #000",
