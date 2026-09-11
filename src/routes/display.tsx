@@ -58,21 +58,34 @@ function DisplayPage() {
     );
   }
 
+  const screenKey = isWaitingForVote ? "idle" : session.status;
+
   return (
     <>
       {obsOpts.hideCursor && (
         <style>{`html, body, * { cursor: none !important; }`}</style>
       )}
       <DisplayStage background={obsOpts.bg}>
-        {isWaitingForVote ? (
-          <IdleScreen url={voteUrl} />
-        ) : session.status === "voting" ? (
-          <VotingScreen session={session} counts={counts} total={total} url={voteUrl} />
-        ) : session.status === "revealing" ? (
-          <RevealingScreen total={total} />
-        ) : (
-          <WinnerScreen session={session} counts={counts} total={total} />
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={screenKey}
+            className="absolute inset-0"
+            initial={{ opacity: 0, scale: 1.04, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 0.97, filter: "blur(10px)" }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {isWaitingForVote ? (
+              <IdleScreen url={voteUrl} />
+            ) : session.status === "voting" ? (
+              <VotingScreen session={session} counts={counts} total={total} url={voteUrl} />
+            ) : session.status === "revealing" ? (
+              <RevealingScreen total={total} />
+            ) : (
+              <WinnerScreen session={session} counts={counts} total={total} />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </DisplayStage>
     </>
   );
@@ -338,7 +351,7 @@ function VersusSide({
           height: `${pct}%`,
           zIndex: 0,
           background: `linear-gradient(0deg, ${pal.base}8c 0%, ${pal.base}24 78%, ${pal.base}00 100%)`,
-          transition: "height 1s cubic-bezier(.22,1,.36,1)",
+          transition: "height 420ms cubic-bezier(.22,1,.36,1)",
         }}
       >
         <div
@@ -373,7 +386,7 @@ function VersusSide({
             borderRadius: "1cqh",
             background: `linear-gradient(0deg, ${pal.dp}, ${pal.base}, ${pal.lt})`,
             boxShadow: `0 0 2cqh ${pal.base}`,
-            transition: "height 1s ease",
+            transition: "height 420ms cubic-bezier(.22,1,.36,1)",
           }}
         />
       </div>

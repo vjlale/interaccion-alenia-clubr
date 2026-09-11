@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveSession, useVotes } from "@/lib/maruja/useSession";
 import { colorForIndex, type Song } from "@/lib/maruja/types";
@@ -69,13 +69,13 @@ function VotePage() {
   const submitVote = async (songId: string) => {
     if (!session || session.status !== "voting" || myVote || voting) return;
     setVoting(true);
+    // Feedback inmediato: mostramos el voto y confirmamos contra el servidor.
+    setMyVote(songId);
     const { error } = await supabase
       .from("votes")
       .insert({ session_id: session.id, song_id: songId, voter_id: voterId });
-    if (!error) {
-      setMyVote(songId);
-      refetch();
-    }
+    if (error) setMyVote(null);
+    else refetch();
     setVoting(false);
   };
 
@@ -94,21 +94,31 @@ function VotePage() {
       }}
     >
       <div className="w-full max-w-[460px] py-4 relative">
-        {!session || session.status === "idle" ? (
-          <IdleMobile session={session} />
-        ) : session.status === "voting" ? (
-          <VotingMobile
-            session={session}
-            total={total}
-            myVote={myVote}
-            voting={voting}
-            onVote={submitVote}
-          />
-        ) : session.status === "revealing" ? (
-          <RevealingMobile total={total} />
-        ) : (
-          <WinnerMobile session={session} counts={counts} total={total} />
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={!session ? "idle" : session.status}
+            initial={{ opacity: 0, y: 18, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -14, scale: 0.98 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {!session || session.status === "idle" ? (
+              <IdleMobile session={session} />
+            ) : session.status === "voting" ? (
+              <VotingMobile
+                session={session}
+                total={total}
+                myVote={myVote}
+                voting={voting}
+                onVote={submitVote}
+              />
+            ) : session.status === "revealing" ? (
+              <RevealingMobile total={total} />
+            ) : (
+              <WinnerMobile session={session} counts={counts} total={total} />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );
