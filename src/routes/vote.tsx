@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveSession, useVotes } from "@/lib/maruja/useSession";
 import { colorForIndex, type Song } from "@/lib/maruja/types";
@@ -69,13 +69,13 @@ function VotePage() {
   const submitVote = async (songId: string) => {
     if (!session || session.status !== "voting" || myVote || voting) return;
     setVoting(true);
+    // Feedback inmediato: mostramos el voto y confirmamos contra el servidor.
+    setMyVote(songId);
     const { error } = await supabase
       .from("votes")
       .insert({ session_id: session.id, song_id: songId, voter_id: voterId });
-    if (!error) {
-      setMyVote(songId);
-      refetch();
-    }
+    if (error) setMyVote(null);
+    else refetch();
     setVoting(false);
   };
 
