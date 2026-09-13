@@ -483,6 +483,35 @@ function AdminPage() {
               </div>
             </div>
           </div>
+
+          <div className="maruja-panel p-6 flex items-center gap-4">
+            <div className="p-2 bg-white rounded-lg">
+              <QRCodeSVG value={cabinaUrl || "https://example.com/cabina"} size={96} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div style={{ fontFamily: "var(--font-display)", color: "#fff", letterSpacing: "0.08em" }}>QR DE CABINA</div>
+              <div className="truncate" style={{ fontFamily: "var(--font-sans)", color: "#E7B10C", fontSize: "0.9rem" }}>
+                {cabinaUrl}
+              </div>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <button
+                  onClick={() => navigator.clipboard.writeText(cabinaUrl)}
+                  className="text-xs px-3 py-1 rounded"
+                  style={{ background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)" }}
+                >
+                  Copiar URL
+                </button>
+                <button
+                  onClick={openCabina}
+                  className="text-xs px-3 py-1 rounded"
+                  style={{ background: "#E7B10C", color: "#0a0118", fontWeight: 700 }}
+                >
+                  Abrir cabina
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
