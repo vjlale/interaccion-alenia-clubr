@@ -219,6 +219,14 @@ function AdminPage() {
           >
             ABRIR DISPLAY
           </button>
+          <button
+            onClick={openCabina}
+            className="px-4 py-2 rounded-lg font-semibold"
+            style={{ background: "#E7B10C", color: "#0a0118", fontFamily: "var(--font-display)", letterSpacing: "0.08em" }}
+          >
+            ABRIR CABINA
+          </button>
+
         </div>
       </div>
 
