@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VoteRouteImport } from './routes/vote'
 import { Route as DisplayRouteImport } from './routes/display'
+import { Route as CabinaRouteImport } from './routes/cabina'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -22,6 +23,11 @@ const VoteRoute = VoteRouteImport.update({
 const DisplayRoute = DisplayRouteImport.update({
   id: '/display',
   path: '/display',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CabinaRoute = CabinaRouteImport.update({
+  id: '/cabina',
+  path: '/cabina',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -38,12 +44,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/cabina': typeof CabinaRoute
   '/display': typeof DisplayRoute
   '/vote': typeof VoteRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/cabina': typeof CabinaRoute
   '/display': typeof DisplayRoute
   '/vote': typeof VoteRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/cabina': typeof CabinaRoute
   '/display': typeof DisplayRoute
   '/vote': typeof VoteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/display' | '/vote'
+  fullPaths: '/' | '/admin' | '/cabina' | '/display' | '/vote'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/display' | '/vote'
-  id: '__root__' | '/' | '/admin' | '/display' | '/vote'
+  to: '/' | '/admin' | '/cabina' | '/display' | '/vote'
+  id: '__root__' | '/' | '/admin' | '/cabina' | '/display' | '/vote'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  CabinaRoute: typeof CabinaRoute
   DisplayRoute: typeof DisplayRoute
   VoteRoute: typeof VoteRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/display'
       fullPath: '/display'
       preLoaderRoute: typeof DisplayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cabina': {
+      id: '/cabina'
+      path: '/cabina'
+      fullPath: '/cabina'
+      preLoaderRoute: typeof CabinaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  CabinaRoute: CabinaRoute,
   DisplayRoute: DisplayRoute,
   VoteRoute: VoteRoute,
 }
