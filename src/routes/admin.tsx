@@ -73,9 +73,14 @@ function AdminPage() {
   const [songs, setSongs] = useState<Song[]>(normalizeSongs(undefined));
   const [duration] = useState(3600); // sin temporizador; valor alto e inocuo
   const [voteUrl, setVoteUrl] = useState("");
+  const [cabinaUrl, setCabinaUrl] = useState("");
   const [savedMsg, setSavedMsg] = useState("");
 
-  useEffect(() => { setVoteUrl(window.location.origin + "/vote"); }, []);
+  useEffect(() => {
+    setVoteUrl(window.location.origin + "/vote");
+    setCabinaUrl(window.location.origin + "/cabina");
+  }, []);
+
 
   useEffect(() => {
     if (!session) return;
@@ -173,6 +178,11 @@ function AdminPage() {
     window.open("/display", "glock-display", "width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no");
   };
 
+  const openCabina = () => {
+    window.open("/cabina", "glock-cabina", "width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no");
+  };
+
+
   return (
     <div className="min-h-screen w-full p-6 md:p-10">
       <div className="maruja-panel p-5 mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -209,6 +219,14 @@ function AdminPage() {
           >
             ABRIR DISPLAY
           </button>
+          <button
+            onClick={openCabina}
+            className="px-4 py-2 rounded-lg font-semibold"
+            style={{ background: "#E7B10C", color: "#0a0118", fontFamily: "var(--font-display)", letterSpacing: "0.08em" }}
+          >
+            ABRIR CABINA
+          </button>
+
         </div>
       </div>
 
@@ -465,6 +483,35 @@ function AdminPage() {
               </div>
             </div>
           </div>
+
+          <div className="maruja-panel p-6 flex items-center gap-4">
+            <div className="p-2 bg-white rounded-lg">
+              <QRCodeSVG value={cabinaUrl || "https://example.com/cabina"} size={96} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div style={{ fontFamily: "var(--font-display)", color: "#fff", letterSpacing: "0.08em" }}>QR DE CABINA</div>
+              <div className="truncate" style={{ fontFamily: "var(--font-sans)", color: "#E7B10C", fontSize: "0.9rem" }}>
+                {cabinaUrl}
+              </div>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <button
+                  onClick={() => navigator.clipboard.writeText(cabinaUrl)}
+                  className="text-xs px-3 py-1 rounded"
+                  style={{ background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)" }}
+                >
+                  Copiar URL
+                </button>
+                <button
+                  onClick={openCabina}
+                  className="text-xs px-3 py-1 rounded"
+                  style={{ background: "#E7B10C", color: "#0a0118", fontWeight: 700 }}
+                >
+                  Abrir cabina
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
