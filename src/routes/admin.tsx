@@ -178,6 +178,11 @@ function AdminPage() {
     window.open("/display", "glock-display", "width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no");
   };
 
+  const openCabina = () => {
+    window.open("/cabina", "glock-cabina", "width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no");
+  };
+
+
   return (
     <div className="min-h-screen w-full p-6 md:p-10">
       <div className="maruja-panel p-5 mb-6 flex flex-wrap items-center justify-between gap-4">
