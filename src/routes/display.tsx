@@ -9,7 +9,7 @@ import glockRight from "@/assets/glock-right.png";
 import glockLogo from "@/assets/glockfinal1.png";
 import versusVs from "@/assets/versus-vs.png";
 import versusBg from "@/assets/versus-bg.jpg";
-import buildByAlenia from "@/assets/build-by-alenia.png";
+
 import { Confetti } from "@/components/maruja/Confetti";
 import { DisplayStage } from "@/components/maruja/DisplayStage";
 
@@ -305,12 +305,6 @@ function VotingScreen({
         <span style={{ color: GOLD.lt }}>{total}</span> {total === 1 ? "voto registrado" : "votos registrados"}
       </div>
 
-      <img
-        src={buildByAlenia}
-        alt="Build by Alenia"
-        className="absolute"
-        style={{ right: "2.4cqw", bottom: "2cqh", height: "5cqh", opacity: 0.9, zIndex: 6, filter: "drop-shadow(0 0.2cqh 0.6cqh rgba(0,0,0,.6))" }}
-      />
     </div>
   );
 }
