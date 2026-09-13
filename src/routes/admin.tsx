@@ -73,9 +73,14 @@ function AdminPage() {
   const [songs, setSongs] = useState<Song[]>(normalizeSongs(undefined));
   const [duration] = useState(3600); // sin temporizador; valor alto e inocuo
   const [voteUrl, setVoteUrl] = useState("");
+  const [cabinaUrl, setCabinaUrl] = useState("");
   const [savedMsg, setSavedMsg] = useState("");
 
-  useEffect(() => { setVoteUrl(window.location.origin + "/vote"); }, []);
+  useEffect(() => {
+    setVoteUrl(window.location.origin + "/vote");
+    setCabinaUrl(window.location.origin + "/cabina");
+  }, []);
+
 
   useEffect(() => {
     if (!session) return;
